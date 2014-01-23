@@ -140,10 +140,12 @@ int main(int argc, char* argv[]) {
     CHK(lseek(dev_fd, tc_bl_sect * SECTOR_SIZE, SEEK_SET));
     CHK(write(dev_fd, recomp_bootloader, cpbl_sz));
 
-    /* Update the checksums in MBR */
+    /* Patch the checksums in MBR (bypass the compressed bootloader one) */
     CHK(patch_chksum(mbr));
 
     /* Update compressed size in MBR */
+    /* Actually unnecessary, this is just used for checksum */
+    /* (Works with this line commented out) */
     *(unsigned short *)&mbr[TC_BOOT_SECTOR_LOADER_LENGTH_OFFSET] = cpbl_sz;
     printf("New compressed bootloader size = %d\n", cpbl_sz);
 

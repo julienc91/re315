@@ -319,7 +319,13 @@ Nous allons maintenant parler plus en profondeur de chaque étape de l'attaque.
 \subsubsection{Séquence de boot de TrueCrypt}
 
 La séquence de boot de TrueCrypt est relativement simple, comme le montre la
-figure \ref{tc_boot}.
+figure \ref{tc_boot}. Toute la séquence se déroule dans en mode réel, c'est à dire
+en mode 16 bits.
+
+Il est bon de noter que le seul semblant d'OS qui est à la disposition du
+programme à ce stade du boot est le BIOS, et les interruptions qu'il propose.
+TrueCrypt réimplemente donc un ensemble de fonctions (notamment d'affichage)
+utilisant les interruptions disponibles au niveau assembleur.
 
 Les étapes sont les suivantes :
 \begin{enumerate}
@@ -329,9 +335,13 @@ Les étapes sont les suivantes :
     \item Le decompressor est exécuté, et décompresse le bootloader de
     TrueCrypt.
     \item Si l'étape précédente est réussie, alors le bootloader fraîchement
-    décompressé est exécuté.
-    \item C'est ce bootloader qui demande le mot de passe : c'est donc ici que
-    nous allons agir pour l'intercepter.
+    décompressé est exécuté. Ceci est réalisé via l'empilement du registre de
+    segment \texttt{es}\footnote{en assembleur intel 16bits, le registre
+    \texttt{es} est utilisé conjointement à d'autres registres pour simuler un
+    adressage sur 20 bits (\texttt{es << 4 + reg}).} (valant 0 ici) et de
+    l'adresse du code dans le segment, en l'occurrence \texttt{0x100} puis
+    l'exécution d'un \texttt{retf}.  \item C'est ce bootloader qui demande le
+    mot de passe : c'est donc ici que nous allons agir pour l'intercepter.
 \end{enumerate}
 
 \begin{figure}
@@ -343,11 +353,215 @@ Les étapes sont les suivantes :
 
 \subsubsection{Infection du code}
 
-\subsubsection{Conclusion}
+Comme nous avons pu l'identifier précédemment, le mot de passe est récupéré et
+utilisé par le bootloader de TrueCrypt, l'idée va donc être de modifier ce
+bootloader pour \textit{leaker} le mot de passe.
+
+\paragraph{Obtention du binaire du bootloader}~
+
+Pour obtenir le binaire décompressé et travailler dessus, il faut commencer par
+récupérer la version compressée. Pour cela, nous avons repéré, en comparant
+le code assembleur source et le code présent dans le MBR après compilation,
+les valeurs indiquant depuis quels secteurs du disque dur ce bootloader était
+chargé. Cela a permis d'automatiser la récupération du bootloader compressé,
+et de s'apercevoir d'un espace vide de quelques secteurs réservé par TrueCrypt,
+qui nous servira par la suite.
+
+Pour décompresser le binaire, on peut soit appeler le décompresseur de
+TrueCrypt (en l'adaptant à notre environnement de travail), soit noter qu'il
+s'agit d'une implémentation de GZip qui a été adaptée au projet. Nous avons
+choisi la deuxième solution, et décompressé le code via GZip. Les options de
+recompression sont visibles dans le Makefile du secteur de boot (qui utilise
+gzip).
+
+Ce binaire exécutable est au format COM, format très simple où il n'y a qu'un
+seul segment contenant code et data. Les premiers octets du fichiers sont
+directement interprétés comme exécutables.
+
+\paragraph{Isolation du code intéressant}~
+
+TrueCrypt fournissant son code source, il a été facile de repérer la fonction à
+cibler : \texttt{AskPassword} (fichier \texttt{BootMain.cpp}), dont le
+prototype est le suivant :
+
+\begin{center}
+    \texttt{void AskPassword(Password \&password)}
+\end{center}
+
+Le choix a été fait (comme dans l'attaque de Johanna Rutkowska) de ne pas
+\textit{insérer} du code (entreprise très périlleuse), mais d'ajouter du code
+après le binaire. Pour repérer la fonction \texttt{AskPassword} dans le code
+décompressé, nous sommes partis des données (les messages affichés dans
+AskPassword, faciles à repérer dans le code avec un \texttt{strings -t x \$file
+| grep all}) et avons rapidement pu trouver l'endroit où était le code (grâce à
+IDA).
+
+Le code appelant \texttt{AskPassword} est facilement trouvable grâce aux
+références croisées de IDA.
+
+\paragraph{Man in the middle applicatif}~
+
+L'infection du code repose sur l'idée du Man in the Middle. Pour notre
+implémentation, nous avons choisi de suivre la méthode employée par Rutkowska,
+mais présenterons plus bas une autre méthode possible. La méthode utilisée
+repose sur l'idée d'intercaler un appel à un code arbitraire avant l'appel à 
+\texttt{AskPassword} (voir figure \ref{ask_tweak}, qui donne un aperçu de l'état
+de la pile lors de l'appel d'\texttt{AskPassword} par notre code inséré).
+L'attaque consiste en la séquence d'actions suivante :
+
+\begin{enumerate}
+    \item Insérer le code "Man in the Middle" (son contenu est expliqué plus loin)
+    à la fin du binaire.
+    \begin{itemize}
+        \item La première version consistait à écrire le code à la suite de la
+        section \texttt{data} du bootloader, mais cela causait des bugs étonnants.
+        Il s'avérait que le programme se servait de cet espace (pour le BSS très
+        certainement), nous avons fini par trouver (grâce à l'exemple de
+        Rutkowska) qu'il existait une variable définissant la taille totale
+        nécessaire au programme (0x6F00 nécessaire pour le code, les
+        data, le bss et la pile, contre environ 0x4c00 pour code et data
+        seulement).
+        \item Nous avons placé le code après cette valeur (à l'offset 0x6F00 du
+        bootloader décompressé), rempli l'espace non utilisé de 0 (pour que le
+        bootloader recompressé ne dépasse pas la taille maximale autorisée). Il
+        a ensuite fallu réécrire la constante donnant la taille nécessaire au 
+        programme dans le MBR.
+    \end{itemize}
+    \item L'appel intéressant à \texttt{AskPassword} dans le code est retrouvé
+    dans le code binaire au moment de l'infection grâce à la recherche d'une
+    chaîne binaire l'identifiant de manière unique (une seule occurrence dans
+    le fichier). On aurait pu directement donner l'offset de l'appel, mais on
+    considèrera qu'un fichier issu de code C compilé est plus prone à varier
+    que le programme en assembleur du bootloader (où des offsets avaient été
+    utilisés). Ceci étant, les deux méthodes ont leurs défauts.
+    \item Une fois l'appel retrouvé, on a toutes les informations : l'offset de
+    l'appel, l'offset d'\texttt{AskPassword} et on connaît l'offset de notre code.
+    Il ne reste plus qu'à :
+    \begin{itemize}
+        \item Faire pointer l'appel à \texttt{AskPassword} vers notre code.
+        \item Faire en sorte que le \texttt{call} de notre code pointe vers
+        \texttt{AskPassword}.
+    \end{itemize}
+\end{enumerate}
+
+\paragraph{Récupération et sauvegarde du mot de passe}~
+
+\begin{figure}
+    \centering
+    \includegraphics[height=0.3\textheight]{img/pile_tc.png}
+    \caption{Vu de l'état de la pile lors de l'appel à \texttt{AskPassword} par
+             le code inséré.}
+    \label{ask_tweak}
+\end{figure}
+
+Pour la récupération du mot de passe, nous avons réutilisé le code assembleur
+rédigé par Rutkowska. C'est ce code qui a été ajouté au binaire pour
+\texttt{leaker} le mot de passe. Ce bout de code était nommé \og logger \fg, nous
+avons gardé le même nom (il s'agit du fichier \texttt{logger.asm}).
+
+Ce code a un fonctionnement très simple : il commence par réempiler l'argument
+\texttt{\&password} (la référence sur la variable \texttt{password}, ce qui
+correspond en assembleur à son adresse) attendu par \texttt{AskPassword}, puis
+appelle cette fonction.  \footnote{Comme expliqué plus haut, l'appel à
+\texttt{AskPassword} est patché lors de l'infection, l'adresse pointée par le
+call dans le code est fictive.}. Lorsqu'elle est appelée, \texttt{AskPassword}
+remplira la structure Password avec le bon contenu, et le code interposé n'aura 
+qu'à dumper le contenu de celle-ci.
+
+Le dump de la structure est une question qui peut paraître délicate de prime
+abord : aucun système de fichier n'est à notre disposition à ce moment du boot.
+Alors où le stocker ?
+
+La réponse que Rutkowska a apporté à la question est simple : sur le disque.
+Dans son code, elle utilise l'interruption 0x13 pour les I/O disque pour écrire
+dans le secteur 61 (en les numérottant depuis 0).
+
+Surpris par ce chiffre, nous avons décidé de chercher un endroit où nous aurions
+une garantie que les données ne seraient pas écrasées. Le lecteur attentif se
+souviendra qu'il restait de l'espace non utilisé dans celui que TrueCrypt se 
+réserve pour stocker le bootloader compressé. Nous allons donc utiliser le dernier
+secteur\footnote{Un secteur fait généralement 512 octets} réservé pour stocker
+le mot de passe (l'espace libre est bien supérieur à la taille d'un secteur).
+Le bootloader compressé commence au secteur 5 et réserve 57 secteurs (constaté
+dans nos tests), 5 + 57 -1 = 61. Le dernier secteur réservé par TrueCrypt est le
+numéro 61, d'où le choix de Rutkowska.
+
+Ce nombre n'étant pas nécessairement le même pour toutes les installations (mais
+suffisamment souvent le même pour avoir une attaque qui fonctionne souvent), il
+aurait été une bonne chose de remplacer également cette valeur au moment de
+l'infection par la valeur adaptée à l'installation de TrueCrypt visée. Nous ne
+l'avons pas fait pour simplifier l'attaque, mais ça serait une piste
+d'amélioration.
+
+La structure contenant le mot de passe est donc tout simplement dumpée sur le
+secteur choisi, et il suffira de lire ce secteur lors d'un accès ultérieur au
+disque dur pour récupérer le mot de passe. L'hypothèse d'un deuxième accès au
+disque dur machine est plus que raisonnable, puisque le but de
+
+\paragraph{Autre méthode}~
+
+Plutôt que de patcher un, ou des appels à AskPassword, on aurait pu envisager
+de patcher la fonction elle-même en remplaçant le dernier \texttt{ret} et 
+quelques instructions précédentes par un jump sur le code ajouté. Dans le code
+ajouté on aurait exécuté les instructions qui ont dû être enlevées de AskPassword
+pour faire loger le jump (3 octets en assembleur 16 bits), puis écrit la structure
+password sur le disque et enfin fait le \texttt{ret} final.
+
+Cela reviendrait à rajouter du code à \texttt{AskPassword} plutôt que
+d'intercepter l'appel. L'adresse de AskPassword peut être trouvé de manière
+relativement fiable en trouvant l'une des chaînes affichées par cette fonction
+et en cherchant les occurrences de son adresse dans le code.
+
+Nous n'avons pas mis en place cette version car nous avons suivi la ligne
+directrice de Rutkowska, mais cela aurait été intéressant à réaliser.
+
+
+\paragraph{Derniers détails} ~
+
+Après avoir réalisé toute ce processus d'infection, il ne faudra pas oublier de :
+\begin{itemize}
+    \item Recompresser le bootloader avec les bonnes options (pour que le
+    Decompressor le décompresse correctement lors du boot). Ces options sont
+    visibles dans le Makefile de la partie Bootloader des sources de TrueCrypt.
+    \item Soit recalculer la checksum du bootloader infecté une fois recompressé,
+    soit tout simplement la bypasser en remplaçant un \texttt{jz} par un simple
+    \texttt{jmp}. Rutkowska a choisi la première option, nous la seconde.
+    \item Comme dit plus haut, mettre à jour la taille de la mémoire nécessaire
+    à la bonne exécution du bootloader.
+\end{itemize}
 
 \subsubsection{Pour aller plus loin...}
-% Remonter l'infection jusqu'au système (après qu'il soit devenu accessible)
-% ==> Rootkit via TrueCrypt
+
+On s'aperçoit avec ce type d'attaque que si on peut infecter l'étape de
+récupération du mot de passe, rien n'empêche à priori d'infecter les étapes 
+suivantes, avec pour objectif d'injecter un rootkit ou une backdoor dans le
+système qui est sur le disque chiffré. Ce rootkit pourra donner tous les droits
+nécessaires à l'exploration du disque à distance sans même avoir besoin
+d'accéder au disque de nouveau.
+
+Cela nécessiterait de se plonger dans le code de TrueCrypt (les sources et les
+binaires) plus longtemps pour en comprendre assez le fonctionnement. TrueCrypt
+étant maintenu par deux personnes et très, très peu documenté, cette entreprise
+n'est pas simple. Il est juste bon de savoir qu'avec du temps et de la motivation,
+un tel rootkit serait probablement réalisable.
+
+\subsubsection{Conclusion}
+
+Nous sommes très satisfaits d'avoir pu écrire une attaque de ce type. Même si
+nous nous sommes appuyés sur les travaux de Johanna Rutkowska pour certains
+aspects de l'implémentation, le résultat est le fruit de notre travail, et
+certaines différences dans les choix qui ont été faits en attestent.
+
+Nous n'avons pas récupéré la clé de chiffrement utilisée par TrueCrypt, mais une
+fois de plus, en lisant un peu plus le code, et étant donné que nous sommes en 
+possession du mot de passe, la clé de chiffrement ne devrait pas être trop 
+compliquée à récupérer.
+
+La possibilité (et la facilité) d'une telle attaque contre TrueCrypt, qui est un
+programme à la fois Open Source et à très bonne réputation pousse à penser qu'avec
+un temps suffisant pour examiner le cas BitLocker, on pourrait construire une
+attaque similaire.
+
 
 \clearpage
 \section{BitLocker pour Windows}
