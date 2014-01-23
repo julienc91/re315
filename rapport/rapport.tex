@@ -1,0 +1,414 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\hypersetup{pdfborder={0 0 0}}
+\usepackage[frenchb]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{float}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage[center]{caption}
+\usepackage{listings}
+\usepackage{numprint}
+\usepackage{color}
+\usepackage{fancyhdr}
+\usepackage{soul}
+\usepackage{enumitem}
+%\newlist{arrowlist}{itemize}{1}
+%\setlist[arrowlist]{label=$\Rightarrow$}
+\pagestyle{fancy}
+
+
+\author{J. \textsc{Chaumont} \and P. \textsc{Gourrinchas} \and \textsc{A. Hanriat} \and \textsc{F. Monjalet}}
+\title{RE315- Sécurité des Réseaux\\Laptop}
+
+\fancyhead[L]{Sécurité des Réseaux}
+\fancyhead[R]{Laptop}
+
+\def\vspaceheight{0.5cm}
+\setlength{\headheight}{15pt}
+
+\definecolor{cblue}{RGB}{0,135,195}
+\definecolor{cgreen}{RGB}{0,153,0}
+\definecolor{cred}{RGB}{255,0,0}
+
+\lstset{
+  frame=single,
+  keywordstyle=\color{cblue},
+  commentstyle=\color{cgreen} \footnotesize,
+  stringstyle=\color{cred},
+  basicstyle=\footnotesize,
+  numbers=left,
+  numbersep=5pt,
+  tabsize=4
+}
+
+
+\begin{document}
+
+
+%%%%%%%% Page de couverture %%%%%%%%
+\thispagestyle{empty}
+\begin{center}
+
+\LARGE{\textsc{RE315 - Sécurité des Réseaux}}\\[0.8cm]
+\Large{\textsc{Projet Laptop}}
+
+\vspace*{0.5cm}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=200px]{img/logo.jpg}
+	\end{center}
+\end{figure}
+
+\vspace*{0.3cm}
+\Large{J. \textsc{Chaumont}\ \ \ P. \textsc{Gourrinchas}\ \ \ \textsc{A. Hanriat}\ \ \ \textsc{F. Monjalet}}\\
+\vspace*{1cm}
+\large{27/01/2014}
+
+
+
+\end{center}
+
+\clearpage
+\tableofcontents
+\clearpage
+
+
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+
+L'explosion des ventes de matériels informatiques nomades, au détriment des stations de travail fixes par exemple, est un bon indicateur des tendances actuelles. Encouragé par l'autonomie croissante des batteries, l'expansion des réseaux mobiles hauts débits ainsi que par la puissance des appareils, le nomadisme numérique est bien plus qu'un effet de mode, et ce, autant pour les loisirs que pour le monde professionnel. En effet, ces dernières années ont vu apparaître le \textit{Bring Your Own Device}, c'est-à-dire le fait qu'un employé utilise ses terminaux personnels dans le cadre de son travail.
+
+Ce constat a certes des côtés positifs en matière de confort d'utilisation: n'importe qui peut être connecté à Internet où qu'il soit, profiter de son ordinateur personnel au travail, et ne plus avoir à systématiquement changer d'appareil en fonction des tâches à réaliser. C'est néanmoins au niveau de la sécurité que se situe la partie la plus inquiétante de ce phénomène. En effet, si un appareil personnel est autorisé à contenir les données d'une entreprise, comment s'assurer de la sécurisation de celui-ci puisqu'il ne relève pas de la juridiction de l'employeur ? 
+
+Par exemple, comment garantir la sécurité des données stockées sur un appareil mobile lorsque celui-ci est volé ? Cette question est loin d'être à prendre à la légère, au vu des chiffres publiés: \numprint{775000} vols de smartphones déclarés en France en 2010\footnote{\url{http://www.inhesj.fr/}}, ou encore 750 vols quotidiens d'ordinateurs portables rien qu'à l'aéroport Charles de Gaulle\footnote{\url{http://www.ponemon.org/}}. Il est à noter que ce point vise aussi bien à protéger les données confidentielles d'entreprise que les données personnelles de l'utilisateur.
+
+La principale réponse à cette question est sans nul doute le chiffrement des disques durs. Il existe aujourd'hui de nombreuses solutions --- commerciales comme libres --- permettant à quiconque de chiffrer ses données afin de rendre impossible l'utilisation de l'appareil sans la connaissance du mot de passe.\\
+
+S'inscrivant dans ce thème, l'objectif du projet était de trouver et d'implémenter des moyens visant à contourner différentes solutions de chiffrement utilisées aujourd'hui. Les attaques ici présentées consistent, le plus souvent, à infecter le secteur de démarrage des machines pour leaker localement ou via le réseau le mot de passe, voir la clé de chiffrement protégeant le disque.
+
+
+\newpage
+\section{Le chiffrement sous Linux avec \texttt{LUKS}}
+
+\subsection{Présentation}
+
+LUKS\footnote{Linux Unified Key Setup} est une spécification de chiffrement de disque dur dont la première version remonte à 2005. L'objectif était de proposer un standard documenté et multi-plateformes (malgré ce que son nom semble indiquer). Sa dernière version en date remonte à 2011\footnote{\url{http://wiki.cryptsetup.googlecode.com/git/LUKS-standard/on-disk-format.pdf}}. C'est ce système qui est utilisé par défaut dans de nombreuses distributions Linux pour le chiffrement de partitions et/ou de disques entiers, même si les implémentations peuvent varier.
+
+Le système est relativement simple. L'utilisateur est seul possesseur d'un mot de passe. Celui-ci est demandée au démarrage de l'ordinateur et sert à déverrouiller la véritable clé de chiffrement : si le mot de passe est correct, alors la clé sera retrouvée et permettra le déchiffrement à la volée du disque chiffré. Si le mot de passe est faux, le système peut le détecter et le redemander.
+
+\begin{figure}[H]
+	\centering
+        % FIXME, ce schéma est un peu faux, LUKS ne déchiffre pas la
+        % partition, il la monte de telle manière que lorsqu'elle est accédée,
+        % les données sont déchiffrées à la volée.
+        
+        % ANSWER modifié
+	\includegraphics[width=400px]{img/luks_principe.png}
+	\caption{Principe de fonctionnement simplifié de LUKS}
+\end{figure}
+
+Dans un linux chiffré avec dm-crypt (respectant la spécification LUKS), il y a une patition de boot non chiffrée contenant un \texttt{initrd}. Il s'agit d'un OS linux minimal servant à réaliser le boot du vrai linux. C'est aussi lors de l'exécution de cet \texttt{initrd} que le mot de passe est demandé et que la partition chiffrée est montée de manière à être déchiffrée à la volée avec la bonne clé.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=400px]{img/luks_fdisk.png}
+	\caption{\texttt{fdisk} indique la présence de deux partitions : la première est la partition de démarrage (elle est en clair), tandis que la seconde contient les données chiffrées}
+\end{figure}
+
+\subsection{Principe de l'attaque}
+
+Il s'agit d'infecter l'\texttt{initrd} présent sur la partition de boot de la machine pour intercepter le mot de passe.
+%Au démarrage de l'ordinateur, celui-ci se lance sur une partition \textit{minimale} ne contenant qu'une image de noyau Linux. Elle contient cependant le nécessaire pour demander à l'utilisateur son mot de passe afin de débloquer la clé de chiffrement et ainsi déchiffrer la partition contenant le reste du système.
+
+
+%L'idée est donc de corrompre la partition de démarrage afin de récupérer le mot de passe entré par l'utilisateur.
+Le seul pré-requis est d'avoir un accès root à la machine cible, que ce soit par un accès physique (via un OS bootable, un boot en single user ou autre astuce) ou non. Notre hypothèse de travail se base sur le principe des attaques dites \textit{evil maid}. Ce nom imagé fait référence aux attaques pour lesquelles l'attaquant peut bénéficier d'un accès matériel à la cible de manière discrète et si possible répétée (d'où la référence à une femme de chambre dans un hôtel). Dans les attaques de type \textit{evil maid}, on considère même une personne ayant des connaissances en informatique potentiellement faible.
+
+L'attaque se divise en deux temps :
+\begin{enumerate}
+    \item Intercepter le mot de passe.
+    \item Le communiquer à l'attaquant.
+\end{enumerate}
+
+La communication à l'attaquant peut se faire via internet (on supposera qu'un Laptop bénéficie d'un accès régulier à internet), ou par stockage discret localement, puis récupération lors d'un deuxième accès à la machine (potentiellement au moment du vol de données).
+
+\subsection{Implémentation sur Debian}
+
+
+% Cette attaque permet d'exécuter du code arbitraire en tant que root sur le
+% système dont le disque est chiffré. C'est la porte ouverte à toutes les 
+% fenêtres... (Rootkit, fuites d'infos si connexion au web, etc...)
+
+\subsection{Implémentation sur Fedora}
+
+Fedora diffère de Debian sur de nombreux points. L'une de ces différences est l'utilisation de \texttt{systemd} par Fedora, alors que Debian utilise par défaut le démon \texttt{init} de \textit{System V}. C'est néanmoins une distribution très utilisée, et il était donc intéressant de reproduire l'attaque sur celle-ci. La principale différence avec l'attaque faite sur Debian est que la partie intéressante de l'image \texttt{initramfs} (qui remplace le \texttt{initrd} de Debian) n'est pas un simple script shell, mais un exécutable binaire.
+
+Sur le principe, l'attaque reste la même : décompresser l'image \texttt{initramfs}, trouver et patcher le fichier sensible se trouvant à l'intérieur, puis reconstruire l'image pour remplacer l'originale. Ceci étant, l'écriture dans un script étant bien plus simple à réaliser que l'écriture dans un fichier binaire, le choix a été de remplacer directement le fichier de départ par une autre version compilée par nos soins. Les sources de \texttt{systemd} étant en effet disponibles très simplement, il est ensuite relativement facile de modifier le bon fichier C --- en l'occurrence \texttt{cryptsetup.c} --- et de recompiler le tout.
+
+La backdoor insérée dans le code consiste simplement à récupérer le mot de passe entré par l'utilisateur et à le dissimuler dans la partition de démarrage, de sorte qu'il puisse être récupéré par l'attaquant. Pour ce faire, une nouvelle hypothèse de travail a été introduite, qui est que l'ordinateur cible utilise un système de fichiers de type ext4 (ce qui est généralement le cas). Il fallait en effet déterminer un endroit du disque où l'insertion du mot de passe ne gênerait pas le fonctionnement normal de l'appareil, et de tels emplacements dépendent grandement du système de fichiers.
+
+Il se trouve que la structure du ext4 force la création d'un espace de 1024 octets remplis de zéros au début de chaque groupes de blocs. Cet espace n'est en fait utilisé que dans certains cas rarement rencontrés, et son contenu ne change en rien le fonctionnement du système dans le reste des cas\footnote{\url{https://ext4.wiki.kernel.org/index.php/Ext4\_Disk\_Layout\#Layout}}. C'est donc l'endroit idéal, puisque sa taille est amplement suffisante, et son emplacement au tout début de la partition le rend très simple d'accès.
+
+\begin{lstlisting}[language=C]
+int fileno = open("/dev/sda1", O_RDWR);
+if(fileno != -1) {
+	write(fileno, *passwords[0], strlen(*passwords[0]));
+	close(fileno);
+}
+\end{lstlisting}
+
+Il est ensuite aisé de reprendre les scripts écrits pour l'infection de Debian et de les adapter à ce nouveau cas, en ajoutant cette fois un script qui devra s'exécuter lors du deuxième accès de l'attaquant à la machine afin de récupérer le mot de passe et effacer ses traces (on aura pris soin, lors du premier accès, à avoir réalisé une copie du binaire \texttt{systemd-cryptsetup} original pour le remettre à sa place).
+
+\begin{lstlisting}[language=Bash]
+# Retrieve the password by copying the first 1024 bytes of the sector
+dd bs=1024 count=1 if=/dev/sda1 of=passdump-devsda1
+# Erase the password by putting zeros
+dd bs=1024 count=1 if=/dev/zero of=/dev/sda1
+# Read the password
+hexdump -C passdump-devsda1
+\end{lstlisting}
+
+
+\subsubsection*{Les problèmes rencontrés}
+
+Il était initialement prévu de mener l'attaque comme sur Fedora en profitant d'un script lancé au démarrage de l'ordinateur pour envoyer le mot de passe sur Internet. Des difficultés ont été rencontrées et nous ont contraint à changer de tactique pour celle qui a finalement été adoptée.
+
+Le problème majeur est le fait que nous n'ayons pas trouvé précisément quels binaires de systemd étaient appelés après montage du système déchiffré. L'autre point était que sur Fedora, le script \texttt{rc.local} utilisé sur Debian n'est par défaut pas pris en charge, et il faut au préalable avoir démarré le service correspondant.
+
+Avec un peu plus de temps, ces problèmes auraient été résolus, mais plutôt que de perdre du temps à tenter de réaliser la même attaque que précédemment, nous avons fais le choix d'essayer une autre méthode.
+
+
+\clearpage
+\section{TrueCrypt, la solution gratuite et portable}
+
+\subsection{Présentation}
+
+TrueCrypt est un logiciel développé dès 1997 et toujours maintenu; la dernière version remontant à 2012. Bien que sa licence\footnote{\url{http://www.truecrypt.org/legal/license}} ne fasse pas de lui un logiciel libre, son code source est gratuitement distribué\footnote{\url{http://www.truecrypt.org/downloads2}}. Écrit en grande partie en langage C et en assembleur, TrueCrypt est disponible sur les systèmes Windows, Linux et Mac OS X. Parmi les nombreuses fonctionnalités du logiciel, on compte notamment:
+\begin{itemize}
+	\item Le chiffrement de dossiers
+	\item Le chiffrement de partitions
+	\item Le chiffrement de disques complets
+\end{itemize}
+
+Un type d'attaque ayant été réalisé sur Linux et ne possédant pas de Mac, nous avons choisi de concentrer nos efforts sur TrueCrypt pour Windows. Nous avons également choisi de nous concentrer sur l'attaque d'un disque entièrement chiffré, présentant à première vue plus de défi qu'une attaque présentant une partie d'un file system en clair.
+
+\subsection{Compilation \textit{maison}}
+
+Le premier type d'attaque tentée est celle qui consiste à délivrer à un client un binaire de TrueCrypt infecté. Elle a le gros avantage de ne pas nécessiter d'accès physique avant le vol de données.
+
+Pour cela, nous avons opté pour une recompilation du binaire pour Windows, le code source étant disponible. Malgré le manque flagrant de documentation et la quantité assez impressionnante de logiciels à installer\footnote{\url{http://stackoverflow.com/a/13414137/2679935}} (et pas des plus simples à se procurer), nous sommes finalement parvenus à compiler le code source du programme. Malheureusement, à l'exécution du binaire résultant, nous étions systématiquement confrontés à une erreur de segmentation dont nous n'avons pu trouver l'origine. Nous avons fait le choix de ne pas aller plus loin dans cette méthode, principalement pour deux raisons:
+\begin{itemize}
+	\item L'installation de TrueCrypt sur Windows requiert des droits système qui déclenchent l'UAC de Windows (à partir de Vista), et sur lequel on peut voir que l'exécutable en question est authentifié comme émanant de la TrueCrypt Foundation. En recompilant nous-même le programme, nous perdons cette signature. Il est bien sûr possible de désactiver l'UAC, mais ce n'est qu'une faible proportion des utilisateurs Windows qui le font.
+	\item Le chiffrement de disque dur ou de partition requiert l'installation des pilotes TrueCrypt. Or, Windows n'autorise par défaut l'installation de ces pilotes que parce qu'ils sont signés et reconnus. Là encore, l'utilisateur peut avoir explicitement autorisé son système à installer des pilotes non signés, mais c'est loin d'être le cas général.
+\end{itemize}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=300px]{img/truecrypt_uac.png}
+	\caption{L'UAC authentifie la provenance de l'exécutable}
+\end{figure}
+
+
+
+\subsection{Le phishing au démarrage}
+
+Une autre solution beaucoup plus simple à mettre en place était de falsifier l'écran de demande de mot de passe de TrueCrypt. Pour cela, un simple programme en C a été réalisé à l'aide de la bibliothèque graphique \textit{ncurses}.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=400px]{img/truecrypt_phishing.png}
+	\caption{Principe du phishing TrueCrypt}
+\end{figure}
+
+Le programme reprend avec soin l'affichage exact de l'écran de démarrage par défaut de TrueCrypt en version 7.1a (la dernière en date), et demande la saisie du mot de passe. L'opération est répétée trois fois avant d'afficher un message d'erreur invitant l'utilisateur à redémarrer sa machine. Entre temps, les mots de passe saisis par l'utilisateur auront été soigneusement stockés en mémoire.
+
+\begin{figure}[H]
+        % FIXME L'erreur de TrueCrypt pour un mot de passe raté est plutôt
+        % quelque chose du genre "Invalid Password. Retry.", à vérifier !
+        
+        % ANSWER L'idée était d'afficher un message différent de d'habitude
+        % pour "justifier" l'erreur qui apparaît au bout de 3 tentatives.
+        % Et ce message d'erreur existe bien:
+        % http://www.truecrypt.org/docs/troubleshooting
+	\centering
+	\includegraphics[width=400px]{img/truecrypt_ncurses.png}
+	\caption{Affichage du programme de phishing TrueCrypt}
+\end{figure}
+
+Pour mettre en place cette attaque, l'idée était d'utiliser la clé USB bootable utilisée pour LUKS, mais en y apportant quelques modifications afin de la rendre le plus \textit{silencieuse} possible: en d'autres termes, pouvoir démarrer sur cette clé sans que la personne devant l'écran ne puisse constater la supercherie.
+
+Cette façon de faire a néanmoins de nombreuses lacunes:
+{
+\renewcommand{\labelitemii}{$\Rightarrow$}
+\begin{itemize}
+	\item on suppose un accès physique à la machine cible pour placer la clé USB puis pour la récupérer
+	\begin{itemize}
+		\item il s'agit là de l'hypothèse de travail pour une attaque \textit{evil maid}
+	\end{itemize}
+	\item on suppose avoir un accès au BIOS de la machine afin de modifier la séquence de démarrage
+	\begin{itemize}
+		\item la proportion d'utilisateurs ayant pris soin de mettre un mot de passe à son BIOS est suffisamment faible
+	\end{itemize}
+	\item on fait confiance à l'utilisateur pour qu'il ne remarque pas la clé branchée sur son port USB
+	\begin{itemize}
+		\item sur un ordinateur fixe, cette supposition est parfaitement envisageable
+		\item elle l'est plus difficilement sur un ordinateur portable, bien qu'on puisse envisager une clé USB enfichable pouvant se cacher derrière une autre légitime (celle de la souris par exemple). Garder la clé non remarquée suffisamment longtemps reste cependant très improbable.
+	\end{itemize}
+	\item l'utilisateur doit avoir installé la version 7.1a de TrueCrypt et ne pas avoir activé d'options faisant apparaître de nouveaux éléments à l'écran de démarrage (message personnalisé activable)
+	\begin{itemize}
+		\item la version 7.1a date de février 2012, on peut donc supposer que c'est celle qui est adoptée dans la majorité des cas
+		\item quant à l'activation d'options, on peut supposer que celles proposées par défaut sont suffisantes pour la plupart des utilisateurs
+	\end{itemize}
+	\item on suppose que l'écran d’accueil de TrueCrypt est celui qui doit apparaître en premier
+	\begin{itemize}
+        % FIXME Faire cohabiter Grub et TrueCrypt est un problème délicat en
+        % soi, je pense qu'on peut l'exclure de notre type d'attaque (contre
+        % le chiffrement total de disque). TrueCrypt s'installe dans le MBR,
+        % si on boot sur ce disque dur, TrueCrypt devra à priori être le premier
+        % à apparaître.
+		\item cette supposition assez forte rejette par exemple les machines démarrant sur Grub
+	\end{itemize}
+\end{itemize}
+}
+
+Il est cependant à noter que les deux derniers points peuvent être contrés en
+se renseignant au préalable sur la cible et en adaptant le programme de
+phishing en conséquence.
+
+
+\subsection{Modification du secteur de boot}
+
+Après examen plus en profondeur du fonctionnement de TrueCrypt, nous avons
+choisi d'implémenter une attaque qui consisterait en la modification directe du
+code présent dans le secteur d'amorçage.
+
+\subsubsection{Méthodologie}
+
+Pour mener à bien cette attaque, nous avons du commencer par nous renseigner
+sur les mécanismes impliqués dans le boot d'une machine sur un disque dur : il
+s'agit principalement de l'exécution d'une petite portion de code présente dans
+MBR (premier secteur du disque dur).
+
+En désassemblant ce code (avec IDA), nous avons pu retrouver la source
+assembleur correspondante dans les sources de TrueCrypt, contenant des
+informations donnant plus de sens au code (évitant par la même occasion du
+temps à reverser le code désassemblé). Il a tout de même fallu se familiariser
+avec les diverses interruptions utilisées pour les I/O, ainsi que quelques
+spécificités de l'assembleur 16 bits présent dans les MBR.
+
+Une fois la séquence de boot comprise et les fonctions clés repérées (notamment
+la fonction AskPassword), nous avions pour projet d'intercepter le mot de passe
+entré par l'utilisateur et de le sauvegarder quelque part (sans encore savoir
+où).
+
+C'est la découverte de l'implémentation d'une attaque similaire par Johanna
+Rutkowska\footnote{Plus d'informations sur
+http://theinvisiblethings.blogspot.ch/2009/10/evil-maid-goes-after-truecrypt.html}
+(\textit{Evil Maid Goes After TrueCrypt}) qui a accéléré le processus
+d'écriture de l'attaque. Le résultat est bel est bien notre production et notre
+vision de l'attaque, mais une grande partie du debug été facilitée par la
+lecture de l'implémentation de Johanna Rutkowska.
+
+Nous allons maintenant parler plus en profondeur de chaque étape de l'attaque.
+
+\subsubsection{Séquence de boot de TrueCrypt}
+
+La séquence de boot de TrueCrypt est relativement simple, comme le montre la
+figure \ref{tc_boot}.
+
+Les étapes sont les suivantes :
+\begin{enumerate}
+    \item Le bootloader présent dans le MBR est exécuté, charge le Decompressor
+    et le bootloader de TrueCrypt (qui est à ce stade compressé) en RAM. Leurs
+    checksums sont vérifiées, et il y a abandon si elles ne sont pas bonnes.
+    \item Le decompressor est exécuté, et décompresse le bootloader de
+    TrueCrypt.
+    \item Si l'étape précédente est réussie, alors le bootloader fraîchement
+    décompressé est exécuté.
+    \item C'est ce bootloader qui demande le mot de passe : c'est donc ici que
+    nous allons agir pour l'intercepter.
+\end{enumerate}
+
+\begin{figure}
+    \centering
+    \includegraphics[height=0.5\textheight]{img/tc_boot.png}
+    \caption{Séquence de boot (simplifiée) de TrueCrypt}
+    \label{tc_boot}
+\end{figure}
+
+\subsubsection{Infection du code}
+
+\subsubsection{Conclusion}
+
+\subsubsection{Pour aller plus loin...}
+% Remonter l'infection jusqu'au système (après qu'il soit devenu accessible)
+% ==> Rootkit via TrueCrypt
+
+\clearpage
+\section{BitLocker pour Windows}
+
+\subsection{Présentation}
+
+
+
+\clearpage
+\section{Les autres solutions}
+
+\subsection{Cold Boot Attack}
+
+Quelle que soit la solution logicielle utilisée, la clé de déchiffrement d'un disque finit tôt ou tard par apparaître dans la mémoire vive de l'ordinateur. Même si celle-ci est effacée dès extinction de l'ordinateur, il a été prouvé que les données y figurant pouvaient être récupérées dans les secondes qui suivaient, cette durée pouvant s'étendre à plusieurs minutes en refroidissant les barrettes de mémoire vive\footnote{\textit{Lest We Remember: Cold Boot Attacks on Encryption Keys}, 2008:\\
+~~~~~~\url{https://citp.princeton.edu/research/memory/}}.
+
+\begin{figure}[H]
+	\centering
+	\begin{tabular}{|l|c|c|c|}
+	\hline
+	Mémoire & Secondes après & \% d'erreurs & \% d'erreurs\\
+			& extinction &  à température ambiante & à -50\degre C\\
+	\hline
+	128Mo SDRAM & 60 & 41 & 0\\
+	\cline{2-4} & 300 & 51 & 0.000095\\
+	\hline
+	256Mo DDR & 120 & 41 & 0.005105\\
+	\cline{2-4} & 360 & 42 & 0.00144\\
+	\hline
+	512Mo DDR & 360 & 50 & 0\\
+	\cline{2-4} & 600 & 50 & 0.000036\\
+	\hline
+	512Mo DDR2 & 40 & 50 & 0.025\\
+	\cline{2-4} & 80 & 50 & 0.18\\
+	\hline
+	\end{tabular}
+	\caption{Comparaison de l'efficacité de la \textit{Cold Boot Attack},\textit{Lest We Remember: Cold Boot Attacks on Encryption Keys}, 2008}
+\end{figure}
+
+Il serait donc parfaitement envisageable d'ôter la RAM d'un ordinateur venant de s'éteindre, de la refroidir rapidement et d'en récupérer le contenu. Il ne resterait plus ensuite qu'à retrouver la clé de chiffrement parmi les gigaoctets de données\dots
+
+
+\subsection{Dump de la RAM}
+
+Sur le principe de base de la \textit{Cold Boot Attack}, en supposant un accès root à la machine cible, il est possible de réaliser une copie exacte de la mémoire vive.
+%TODO
+
+Mais là encore, il reste la difficile étape de retrouver la clé de chiffrement parmi l'énorme quantité de données récupérée.
+
+
+\subsection{La solution de l'acharnement: le brute-force}
+
+Dans le cas où l'attaquant a les ressources en temps et en matériel et que celui-ci souhaite ardemment récupérer le contenu chiffré, il est toujours envisageable de déployer une attaque par force brute. Le problème intrinsèque au mot de passe est qu'il doit à la fois être suffisamment complexe pour qu'il ne puisse pas être trouvé aisément, tout en étant suffisamment \textit{simple} pour que l'utilisateur puisse s'en souvenir pour le saisir sans avoir à le noter à côté de son poste. Même si, par des moyens mnémotechniques, on peut envisager l'utilisation de mots de passe d'une vingtaine de caractères, il est certain que les avancées technologiques finiront tôt ou tard par permettre la récupération de mots de passe de cette taille de manière relativement rapide.
+
+Il est peut-être donc temps désormais de passer à un autre type d'authentification, plus complexe à outrepasser, telle que l'authentification biométrique.
+
+
+
+
+\clearpage
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+
+\end{document}

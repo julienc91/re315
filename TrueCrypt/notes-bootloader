@@ -1,0 +1,8 @@
+Le bootloader compressé est dans le secteur 5, longueur max 57 secteurs.
+
+Il y a un DECOMPRESSOR en clair (pas dans le bootloader ?) qui décompresse le
+vrai programme de déchiffrement TrueCrypt avant de pouvoir l'appeler.
+
+L'intégrité du vrai bootloader est vérifiée (à patcher) + patcher l'adresse
+d'appel du bootloader ? Écrire le nôtre qui peut soit appeler le vrai
+bootloader, soit être le vrai bootloader patché (bonne idée je pense).

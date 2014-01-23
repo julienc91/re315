@@ -1,0 +1,254 @@
+<?xml version="1.0"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+               "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+  <!ENTITY version SYSTEM "version.xml">
+]>
+<refentry id="libudev-udev-monitor">
+<refmeta>
+<refentrytitle role="top_of_page" id="libudev-udev-monitor.top_of_page">udev_monitor</refentrytitle>
+<manvolnum>3</manvolnum>
+<refmiscinfo>
+  LIBUDEV Library
+</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>udev_monitor</refname>
+<refpurpose>device event source</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv id="libudev-udev-monitor.synopsis" role="synopsis">
+<title role="synopsis.title">Synopsis</title>
+
+<synopsis>struct              <link linkend="udev-monitor">udev_monitor</link>;
+struct <link linkend="udev-monitor"><returnvalue>udev_monitor</returnvalue></link> * <link linkend="udev-monitor-ref">udev_monitor_ref</link>                  (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>);
+struct <link linkend="udev-monitor"><returnvalue>udev_monitor</returnvalue></link> * <link linkend="udev-monitor-unref">udev_monitor_unref</link>                (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>);
+struct <link linkend="udev"><returnvalue>udev</returnvalue></link> *       <link linkend="udev-monitor-get-udev">udev_monitor_get_udev</link>               (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>);
+struct <link linkend="udev-monitor"><returnvalue>udev_monitor</returnvalue></link> * <link linkend="udev-monitor-new-from-netlink">udev_monitor_new_from_netlink</link>     (<parameter><type>struct udev</type> *udev</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *name</parameter>);
+<link linkend="int"><returnvalue>int</returnvalue></link>                 <link linkend="udev-monitor-enable-receiving">udev_monitor_enable_receiving</link>       (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>);
+<link linkend="int"><returnvalue>int</returnvalue></link>                 <link linkend="udev-monitor-set-receive-buffer-size">udev_monitor_set_receive_buffer_size</link>
+                                                        (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>,
+                                                         <parameter><link linkend="int"><type>int</type></link> size</parameter>);
+<link linkend="int"><returnvalue>int</returnvalue></link>                 <link linkend="udev-monitor-get-fd">udev_monitor_get_fd</link>                 (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>);
+struct <link linkend="udev-device"><returnvalue>udev_device</returnvalue></link> * <link linkend="udev-monitor-receive-device">udev_monitor_receive_device</link>        (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>);
+<link linkend="int"><returnvalue>int</returnvalue></link>                 <link linkend="udev-monitor-filter-add-match-subsystem-devtype">udev_monitor_filter_add_match_subsystem_devtype</link>
+                                                        (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *subsystem</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *devtype</parameter>);
+<link linkend="int"><returnvalue>int</returnvalue></link>                 <link linkend="udev-monitor-filter-add-match-tag">udev_monitor_filter_add_match_tag</link>   (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *tag</parameter>);
+<link linkend="int"><returnvalue>int</returnvalue></link>                 <link linkend="udev-monitor-filter-update">udev_monitor_filter_update</link>          (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>);
+<link linkend="int"><returnvalue>int</returnvalue></link>                 <link linkend="udev-monitor-filter-remove">udev_monitor_filter_remove</link>          (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>);
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1 id="libudev-udev-monitor.description" role="desc">
+<title role="desc.title">Description</title>
+<para>
+Connects to a device event source.
+</para>
+</refsect1>
+<refsect1 id="libudev-udev-monitor.details" role="details">
+<title role="details.title">Details</title>
+<refsect2 id="udev-monitor" role="struct">
+<title>struct udev_monitor</title>
+<indexterm zone="udev-monitor"><primary sortas="monitor">udev_monitor</primary></indexterm>
+<programlisting>struct udev_monitor;</programlisting>
+<para>
+Opaque object handling an event source.
+</para></refsect2>
+<refsect2 id="udev-monitor-ref" role="function">
+<title>udev_monitor_ref ()</title>
+<indexterm zone="udev-monitor-ref"><primary sortas="monitor_ref">udev_monitor_ref</primary></indexterm>
+<programlisting>struct <link linkend="udev-monitor"><returnvalue>udev_monitor</returnvalue></link> * udev_monitor_ref                  (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>);</programlisting>
+<para>
+Take a reference of a udev monitor.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_monitor</parameter>&#160;:</term>
+<listitem><simpara>udev monitor</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the passed udev monitor</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-monitor-unref" role="function">
+<title>udev_monitor_unref ()</title>
+<indexterm zone="udev-monitor-unref"><primary sortas="monitor_unref">udev_monitor_unref</primary></indexterm>
+<programlisting>struct <link linkend="udev-monitor"><returnvalue>udev_monitor</returnvalue></link> * udev_monitor_unref                (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>);</programlisting>
+<para>
+Drop a reference of a udev monitor. If the refcount reaches zero,
+the bound socket will be closed, and the resources of the monitor
+will be released.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_monitor</parameter>&#160;:</term>
+<listitem><simpara>udev monitor</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara><link linkend="NULL:CAPS"><type>NULL</type></link></simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-monitor-get-udev" role="function">
+<title>udev_monitor_get_udev ()</title>
+<indexterm zone="udev-monitor-get-udev"><primary sortas="monitor_get_udev">udev_monitor_get_udev</primary></indexterm>
+<programlisting>struct <link linkend="udev"><returnvalue>udev</returnvalue></link> *       udev_monitor_get_udev               (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>);</programlisting>
+<para>
+Retrieve the udev library context the monitor was created with.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_monitor</parameter>&#160;:</term>
+<listitem><simpara>udev monitor</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the udev library context</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-monitor-new-from-netlink" role="function">
+<title>udev_monitor_new_from_netlink ()</title>
+<indexterm zone="udev-monitor-new-from-netlink"><primary sortas="monitor_new_from_netlink">udev_monitor_new_from_netlink</primary></indexterm>
+<programlisting>struct <link linkend="udev-monitor"><returnvalue>udev_monitor</returnvalue></link> * udev_monitor_new_from_netlink     (<parameter><type>struct udev</type> *udev</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *name</parameter>);</programlisting>
+<para>
+Create new udev monitor and connect to a specified event
+source. Valid sources identifiers are "udev" and "kernel".
+</para>
+<para>
+Applications should usually not connect directly to the
+"kernel" events, because the devices might not be useable
+at that time, before udev has configured them, and created
+device nodes. Accessing devices at the same time as udev,
+might result in unpredictable behavior. The "udev" events
+are sent out after udev has finished its event processing,
+all rules have been processed, and needed device nodes are
+created.
+</para>
+<para>
+The initial refcount is 1, and needs to be decremented to
+release the resources of the udev monitor.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev</parameter>&#160;:</term>
+<listitem><simpara>udev library context</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>name</parameter>&#160;:</term>
+<listitem><simpara>name of event source</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>a new udev monitor, or <link linkend="NULL:CAPS"><type>NULL</type></link>, in case of an error</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-monitor-enable-receiving" role="function">
+<title>udev_monitor_enable_receiving ()</title>
+<indexterm zone="udev-monitor-enable-receiving"><primary sortas="monitor_enable_receiving">udev_monitor_enable_receiving</primary></indexterm>
+<programlisting><link linkend="int"><returnvalue>int</returnvalue></link>                 udev_monitor_enable_receiving       (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>);</programlisting>
+<para>
+Binds the <parameter>udev_monitor</parameter> socket to the event source.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_monitor</parameter>&#160;:</term>
+<listitem><simpara>the monitor which should receive events</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>0 on success, otherwise a negative error value.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-monitor-set-receive-buffer-size" role="function">
+<title>udev_monitor_set_receive_buffer_size ()</title>
+<indexterm zone="udev-monitor-set-receive-buffer-size"><primary sortas="monitor_set_receive_buffer_size">udev_monitor_set_receive_buffer_size</primary></indexterm>
+<programlisting><link linkend="int"><returnvalue>int</returnvalue></link>                 udev_monitor_set_receive_buffer_size
+                                                        (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>,
+                                                         <parameter><link linkend="int"><type>int</type></link> size</parameter>);</programlisting>
+<para>
+Set the size of the kernel socket buffer. This call needs the
+appropriate privileges to succeed.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_monitor</parameter>&#160;:</term>
+<listitem><simpara>the monitor which should receive events</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>size</parameter>&#160;:</term>
+<listitem><simpara>the size in bytes</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>0 on success, otherwise -1 on error.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-monitor-get-fd" role="function">
+<title>udev_monitor_get_fd ()</title>
+<indexterm zone="udev-monitor-get-fd"><primary sortas="monitor_get_fd">udev_monitor_get_fd</primary></indexterm>
+<programlisting><link linkend="int"><returnvalue>int</returnvalue></link>                 udev_monitor_get_fd                 (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>);</programlisting>
+<para>
+Retrieve the socket file descriptor associated with the monitor.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_monitor</parameter>&#160;:</term>
+<listitem><simpara>udev monitor</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the socket file descriptor</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-monitor-receive-device" role="function">
+<title>udev_monitor_receive_device ()</title>
+<indexterm zone="udev-monitor-receive-device"><primary sortas="monitor_receive_device">udev_monitor_receive_device</primary></indexterm>
+<programlisting>struct <link linkend="udev-device"><returnvalue>udev_device</returnvalue></link> * udev_monitor_receive_device        (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>);</programlisting>
+<para>
+Receive data from the udev monitor socket, allocate a new udev
+device, fill in the received data, and return the device.
+</para>
+<para>
+Only socket connections with uid=0 are accepted.
+</para>
+<para>
+The monitor socket is by default set to NONBLOCK. A variant of <link linkend="poll"><function>poll()</function></link> on
+the file descriptor returned by <link linkend="udev-monitor-get-fd"><function>udev_monitor_get_fd()</function></link> should to be used to
+wake up when new devices arrive, or alternatively the file descriptor
+switched into blocking mode.
+</para>
+<para>
+The initial refcount is 1, and needs to be decremented to
+release the resources of the udev device.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_monitor</parameter>&#160;:</term>
+<listitem><simpara>udev monitor</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>a new udev device, or <link linkend="NULL:CAPS"><type>NULL</type></link>, in case of an error</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-monitor-filter-add-match-subsystem-devtype" role="function">
+<title>udev_monitor_filter_add_match_subsystem_devtype ()</title>
+<indexterm zone="udev-monitor-filter-add-match-subsystem-devtype"><primary sortas="monitor_filter_add_match_subsystem_devtype">udev_monitor_filter_add_match_subsystem_devtype</primary></indexterm>
+<programlisting><link linkend="int"><returnvalue>int</returnvalue></link>                 udev_monitor_filter_add_match_subsystem_devtype
+                                                        (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *subsystem</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *devtype</parameter>);</programlisting>
+<para>
+This filter is efficiently executed inside the kernel, and libudev subscribers
+will usually not be woken up for devices which do not match.
+</para>
+<para>
+The filter must be installed before the monitor is switched to listening mode.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_monitor</parameter>&#160;:</term>
+<listitem><simpara>the monitor</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>subsystem</parameter>&#160;:</term>
+<listitem><simpara>the subsystem value to match the incoming devices against</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>devtype</parameter>&#160;:</term>
+<listitem><simpara>the devtype value to match the incoming devices against</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>0 on success, otherwise a negative error value.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-monitor-filter-add-match-tag" role="function">
+<title>udev_monitor_filter_add_match_tag ()</title>
+<indexterm zone="udev-monitor-filter-add-match-tag"><primary sortas="monitor_filter_add_match_tag">udev_monitor_filter_add_match_tag</primary></indexterm>
+<programlisting><link linkend="int"><returnvalue>int</returnvalue></link>                 udev_monitor_filter_add_match_tag   (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *tag</parameter>);</programlisting>
+<para>
+This filter is efficiently executed inside the kernel, and libudev subscribers
+will usually not be woken up for devices which do not match.
+</para>
+<para>
+The filter must be installed before the monitor is switched to listening mode.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_monitor</parameter>&#160;:</term>
+<listitem><simpara>the monitor</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>tag</parameter>&#160;:</term>
+<listitem><simpara>the name of a tag</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>0 on success, otherwise a negative error value.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-monitor-filter-update" role="function">
+<title>udev_monitor_filter_update ()</title>
+<indexterm zone="udev-monitor-filter-update"><primary sortas="monitor_filter_update">udev_monitor_filter_update</primary></indexterm>
+<programlisting><link linkend="int"><returnvalue>int</returnvalue></link>                 udev_monitor_filter_update          (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>);</programlisting>
+<para>
+Update the installed socket filter. This is only needed,
+if the filter was removed or changed.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_monitor</parameter>&#160;:</term>
+<listitem><simpara>monitor</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>0 on success, otherwise a negative error value.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-monitor-filter-remove" role="function">
+<title>udev_monitor_filter_remove ()</title>
+<indexterm zone="udev-monitor-filter-remove"><primary sortas="monitor_filter_remove">udev_monitor_filter_remove</primary></indexterm>
+<programlisting><link linkend="int"><returnvalue>int</returnvalue></link>                 udev_monitor_filter_remove          (<parameter><type>struct udev_monitor</type> *udev_monitor</parameter>);</programlisting>
+<para>
+Remove all filters from monitor.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_monitor</parameter>&#160;:</term>
+<listitem><simpara>monitor</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>0 on success, otherwise a negative error value.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+
+</refsect1>
+
+</refentry>

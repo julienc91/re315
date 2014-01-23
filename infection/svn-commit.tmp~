@@ -1,0 +1,5 @@
+
+--Cette ligne, et les suivantes ci-dessous, seront ignorées--
+
+M    fedora_infection/get_password.sh
+M    fedora_infection/infect.sh

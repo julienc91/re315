@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE informaltable PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+               "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+  <!ENTITY version SYSTEM "version.xml">
+]>
+<informaltable pgwide="1" frame="none">
+<tgroup cols="3">
+<colspec colwidth="1*"/>
+<colspec colwidth="1*"/>
+<colspec colwidth="1*"/>
+<tbody>
+<row>
+<entry><link linkend="GEnum">GEnum</link></entry>
+<entry><link linkend="GObject">GObject</link></entry>
+<entry><link linkend="GUdevClient">GUdevClient</link></entry>
+</row>
+<row>
+<entry><link linkend="GUdevDevice">GUdevDevice</link></entry>
+<entry><link linkend="GUdevDeviceType">GUdevDeviceType</link></entry>
+<entry><link linkend="GUdevEnumerator">GUdevEnumerator</link></entry>
+</row>
+</tbody></tgroup></informaltable>

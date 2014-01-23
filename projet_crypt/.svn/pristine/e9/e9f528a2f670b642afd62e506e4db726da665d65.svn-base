@@ -1,0 +1,13 @@
+/lib/modules/2.6.27.5-117.fc10.i686/padlock-sha.ko:
+/lib/modules/2.6.27.5-117.fc10.i686/dm-crypt.ko: /lib/modules/2.6.27.5-117.fc10.i686/crypto_blkcipher.ko
+/lib/modules/2.6.27.5-117.fc10.i686/sha256_generic.ko:
+/lib/modules/2.6.27.5-117.fc10.i686/scsi_transport_spi.ko:
+/lib/modules/2.6.27.5-117.fc10.i686/aes-i586.ko: /lib/modules/2.6.27.5-117.fc10.i686/aes_generic.ko
+/lib/modules/2.6.27.5-117.fc10.i686/padlock-aes.ko: /lib/modules/2.6.27.5-117.fc10.i686/crypto_blkcipher.ko /lib/modules/2.6.27.5-117.fc10.i686/aes_generic.ko
+/lib/modules/2.6.27.5-117.fc10.i686/mptscsih.ko: /lib/modules/2.6.27.5-117.fc10.i686/mptbase.ko
+/lib/modules/2.6.27.5-117.fc10.i686/cbc.ko: /lib/modules/2.6.27.5-117.fc10.i686/crypto_blkcipher.ko
+/lib/modules/2.6.27.5-117.fc10.i686/mptspi.ko: /lib/modules/2.6.27.5-117.fc10.i686/mptscsih.ko /lib/modules/2.6.27.5-117.fc10.i686/mptbase.ko /lib/modules/2.6.27.5-117.fc10.i686/scsi_transport_spi.ko
+/lib/modules/2.6.27.5-117.fc10.i686/aes_generic.ko:
+/lib/modules/2.6.27.5-117.fc10.i686/mptbase.ko:
+/lib/modules/2.6.27.5-117.fc10.i686/crypto_blkcipher.ko:
+/lib/modules/2.6.27.5-117.fc10.i686/usb-storage.ko:

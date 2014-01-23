@@ -1,0 +1,22 @@
+(20.8.2011)
+
+1.6.1 -- Changelog & README update;)
+
+1.6.0 -- Bugfixes: 
+-- Fixed compilation errors on new kernels, BKL removed,
+-- Fixed rare bug ( long vs. ulong ) causing null dereference
+-- 3.x kernels are supported now
+
+1.5.0 -- Minor Bugfixes: 
+-- Fixed compilation errors on older kernels and RHEL
+-- run.sh fixed (module will not load, if address is invalid)
+
+1.4.0 -- Renamed to fmem (name collision)
+
+1.3.0 -- Header fix for x64 architecture. Tested on x64.
+
+1.2.0 -- Minor Bugfixes, run.sh improved
+
+1.0.0 -- First properly working version
+
+0.5.0 -- First version

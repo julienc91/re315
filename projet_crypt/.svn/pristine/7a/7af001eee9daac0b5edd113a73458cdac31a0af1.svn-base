@@ -1,0 +1,43 @@
+src/shared/ima-util.lo: src/shared/ima-util.c /usr/include/stdc-predef.h \
+ config.h /usr/include/unistd.h /usr/include/features.h \
+ /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
+ /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
+ /usr/include/bits/posix_opt.h /usr/include/bits/environments.h \
+ /usr/include/bits/types.h /usr/include/bits/typesizes.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.8.2/include/stddef.h \
+ /usr/include/bits/confname.h /usr/include/getopt.h src/shared/ima-util.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.8.2/include/stdbool.h
+
+/usr/include/stdc-predef.h:
+
+config.h:
+
+/usr/include/unistd.h:
+
+/usr/include/features.h:
+
+/usr/include/sys/cdefs.h:
+
+/usr/include/bits/wordsize.h:
+
+/usr/include/gnu/stubs.h:
+
+/usr/include/gnu/stubs-64.h:
+
+/usr/include/bits/posix_opt.h:
+
+/usr/include/bits/environments.h:
+
+/usr/include/bits/types.h:
+
+/usr/include/bits/typesizes.h:
+
+/usr/lib/gcc/x86_64-redhat-linux/4.8.2/include/stddef.h:
+
+/usr/include/bits/confname.h:
+
+/usr/include/getopt.h:
+
+src/shared/ima-util.h:
+
+/usr/lib/gcc/x86_64-redhat-linux/4.8.2/include/stdbool.h:

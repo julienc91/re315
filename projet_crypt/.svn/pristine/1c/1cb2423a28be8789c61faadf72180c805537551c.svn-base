@@ -1,0 +1,3 @@
+    <xi:include href="xml/gudevclient.xml"/>
+    <xi:include href="xml/gudevdevice.xml"/>
+    <xi:include href="xml/gudevenumerator.xml"/>

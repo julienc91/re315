@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+               "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+  <!ENTITY version SYSTEM "version.xml">
+]>
+<refentry id="libudev-udev-util">
+<refmeta>
+<refentrytitle role="top_of_page" id="libudev-udev-util.top_of_page">udev_util</refentrytitle>
+<manvolnum>3</manvolnum>
+<refmiscinfo>
+  LIBUDEV Library
+</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>udev_util</refname>
+<refpurpose>utils</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv id="libudev-udev-util.synopsis" role="synopsis">
+<title role="synopsis.title">Synopsis</title>
+
+<synopsis><link linkend="int"><returnvalue>int</returnvalue></link>                 <link linkend="udev-util-encode-string">udev_util_encode_string</link>             (<parameter>const <link linkend="char"><type>char</type></link> *str</parameter>,
+                                                         <parameter><link linkend="char"><type>char</type></link> *str_enc</parameter>,
+                                                         <parameter><link linkend="size-t"><type>size_t</type></link> len</parameter>);
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1 id="libudev-udev-util.description" role="desc">
+<title role="desc.title">Description</title>
+<para>
+Utilities useful when dealing with devices and device node names.
+</para>
+</refsect1>
+<refsect1 id="libudev-udev-util.details" role="details">
+<title role="details.title">Details</title>
+<refsect2 id="udev-util-encode-string" role="function">
+<title>udev_util_encode_string ()</title>
+<indexterm zone="udev-util-encode-string"><primary sortas="util_encode_string">udev_util_encode_string</primary></indexterm>
+<programlisting><link linkend="int"><returnvalue>int</returnvalue></link>                 udev_util_encode_string             (<parameter>const <link linkend="char"><type>char</type></link> *str</parameter>,
+                                                         <parameter><link linkend="char"><type>char</type></link> *str_enc</parameter>,
+                                                         <parameter><link linkend="size-t"><type>size_t</type></link> len</parameter>);</programlisting>
+<para>
+Encode all potentially unsafe characters of a string to the
+corresponding 2 char hex value prefixed by '\x'.
+</para><variablelist role="params">
+<varlistentry><term><parameter>str</parameter>&#160;:</term>
+<listitem><simpara>input string to be encoded</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>str_enc</parameter>&#160;:</term>
+<listitem><simpara>output string to store the encoded input string</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>len</parameter>&#160;:</term>
+<listitem><simpara>maximum size of the output string, which may be
+four times as long as the input string</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>0 if the entire string was copied, non-zero otherwise.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+
+</refsect1>
+
+</refentry>

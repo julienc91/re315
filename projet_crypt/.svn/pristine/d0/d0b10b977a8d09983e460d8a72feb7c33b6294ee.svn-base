@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!DOCTYPE screen PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+               "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+  <!ENTITY version SYSTEM "version.xml">
+]>
+<screen>
+    <link linkend="GObject">GObject</link>
+        <link linkend="GUdevDevice">GUdevDevice</link>
+        <link linkend="GUdevClient">GUdevClient</link>
+        <link linkend="GUdevEnumerator">GUdevEnumerator</link>
+    <link linkend="GEnum">GEnum</link>
+        <link linkend="GUdevDeviceType">GUdevDeviceType</link>
+</screen>

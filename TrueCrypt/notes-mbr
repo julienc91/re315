@@ -1,0 +1,12 @@
+mbr = 512 first bytes
+bootloader = 446 first bytes
+partition table = 4 slots of 16 bytes each (4*16 = 64)
+    state = 1b
+    custom heads = 1b
+    cylinder sector = 2b
+    type of partition (format ext3, ntfs...) = 1b
+    Head of the end of the partition = 1b
+    Cylinder at the end of the score = 2b
+    number of sectors between mbr and first sector of the partition = 4b
+    number of sectors of the partition
+MagicNumber = 2b = 55AA = is a bootloader

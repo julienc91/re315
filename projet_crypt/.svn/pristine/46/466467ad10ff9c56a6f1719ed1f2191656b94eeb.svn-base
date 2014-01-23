@@ -1,0 +1,583 @@
+<?xml version="1.0"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+               "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+  <!ENTITY version SYSTEM "version.xml">
+]>
+<refentry id="libudev-udev-device">
+<refmeta>
+<refentrytitle role="top_of_page" id="libudev-udev-device.top_of_page">udev_device</refentrytitle>
+<manvolnum>3</manvolnum>
+<refmiscinfo>
+  LIBUDEV Library
+</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>udev_device</refname>
+<refpurpose>kernel sys devices</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv id="libudev-udev-device.synopsis" role="synopsis">
+<title role="synopsis.title">Synopsis</title>
+
+<synopsis>struct              <link linkend="udev-device">udev_device</link>;
+struct <link linkend="udev-device"><returnvalue>udev_device</returnvalue></link> * <link linkend="udev-device-ref">udev_device_ref</link>                    (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+struct <link linkend="udev-device"><returnvalue>udev_device</returnvalue></link> * <link linkend="udev-device-unref">udev_device_unref</link>                  (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+struct <link linkend="udev"><returnvalue>udev</returnvalue></link> *       <link linkend="udev-device-get-udev">udev_device_get_udev</link>                (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+struct <link linkend="udev-device"><returnvalue>udev_device</returnvalue></link> * <link linkend="udev-device-new-from-syspath">udev_device_new_from_syspath</link>       (<parameter><type>struct udev</type> *udev</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *syspath</parameter>);
+struct <link linkend="udev-device"><returnvalue>udev_device</returnvalue></link> * <link linkend="udev-device-new-from-devnum">udev_device_new_from_devnum</link>        (<parameter><type>struct udev</type> *udev</parameter>,
+                                                         <parameter><link linkend="char"><type>char</type></link> type</parameter>,
+                                                         <parameter><link linkend="dev-t"><type>dev_t</type></link> devnum</parameter>);
+struct <link linkend="udev-device"><returnvalue>udev_device</returnvalue></link> * <link linkend="udev-device-new-from-subsystem-sysname">udev_device_new_from_subsystem_sysname</link>
+                                                        (<parameter><type>struct udev</type> *udev</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *subsystem</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *sysname</parameter>);
+struct <link linkend="udev-device"><returnvalue>udev_device</returnvalue></link> * <link linkend="udev-device-new-from-device-id">udev_device_new_from_device_id</link>     (<parameter><type>struct udev</type> *udev</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *id</parameter>);
+struct <link linkend="udev-device"><returnvalue>udev_device</returnvalue></link> * <link linkend="udev-device-new-from-environment">udev_device_new_from_environment</link>   (<parameter><type>struct udev</type> *udev</parameter>);
+struct <link linkend="udev-device"><returnvalue>udev_device</returnvalue></link> * <link linkend="udev-device-get-parent">udev_device_get_parent</link>             (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+struct <link linkend="udev-device"><returnvalue>udev_device</returnvalue></link> * <link linkend="udev-device-get-parent-with-subsystem-devtype">udev_device_get_parent_with_subsystem_devtype</link>
+                                                        (<parameter><type>struct udev_device</type> *udev_device</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *subsystem</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *devtype</parameter>);
+const <link linkend="char"><returnvalue>char</returnvalue></link> *        <link linkend="udev-device-get-devpath">udev_device_get_devpath</link>             (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+const <link linkend="char"><returnvalue>char</returnvalue></link> *        <link linkend="udev-device-get-subsystem">udev_device_get_subsystem</link>           (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+const <link linkend="char"><returnvalue>char</returnvalue></link> *        <link linkend="udev-device-get-devtype">udev_device_get_devtype</link>             (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+const <link linkend="char"><returnvalue>char</returnvalue></link> *        <link linkend="udev-device-get-syspath">udev_device_get_syspath</link>             (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+const <link linkend="char"><returnvalue>char</returnvalue></link> *        <link linkend="udev-device-get-sysname">udev_device_get_sysname</link>             (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+const <link linkend="char"><returnvalue>char</returnvalue></link> *        <link linkend="udev-device-get-sysnum">udev_device_get_sysnum</link>              (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+const <link linkend="char"><returnvalue>char</returnvalue></link> *        <link linkend="udev-device-get-devnode">udev_device_get_devnode</link>             (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+<link linkend="int"><returnvalue>int</returnvalue></link>                 <link linkend="udev-device-get-is-initialized">udev_device_get_is_initialized</link>      (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+struct <link linkend="udev-list-entry"><returnvalue>udev_list_entry</returnvalue></link> * <link linkend="udev-device-get-devlinks-list-entry">udev_device_get_devlinks_list_entry</link>
+                                                        (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+struct <link linkend="udev-list-entry"><returnvalue>udev_list_entry</returnvalue></link> * <link linkend="udev-device-get-properties-list-entry">udev_device_get_properties_list_entry</link>
+                                                        (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+struct <link linkend="udev-list-entry"><returnvalue>udev_list_entry</returnvalue></link> * <link linkend="udev-device-get-tags-list-entry">udev_device_get_tags_list_entry</link>
+                                                        (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+const <link linkend="char"><returnvalue>char</returnvalue></link> *        <link linkend="udev-device-get-property-value">udev_device_get_property_value</link>      (<parameter><type>struct udev_device</type> *udev_device</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *key</parameter>);
+const <link linkend="char"><returnvalue>char</returnvalue></link> *        <link linkend="udev-device-get-driver">udev_device_get_driver</link>              (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+<link linkend="dev-t"><returnvalue>dev_t</returnvalue></link>               <link linkend="udev-device-get-devnum">udev_device_get_devnum</link>              (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+const <link linkend="char"><returnvalue>char</returnvalue></link> *        <link linkend="udev-device-get-action">udev_device_get_action</link>              (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+const <link linkend="char"><returnvalue>char</returnvalue></link> *        <link linkend="udev-device-get-sysattr-value">udev_device_get_sysattr_value</link>       (<parameter><type>struct udev_device</type> *udev_device</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *sysattr</parameter>);
+<link linkend="int"><returnvalue>int</returnvalue></link>                 <link linkend="udev-device-set-sysattr-value">udev_device_set_sysattr_value</link>       (<parameter><type>struct udev_device</type> *udev_device</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *sysattr</parameter>,
+                                                         <parameter><link linkend="char"><type>char</type></link> *value</parameter>);
+struct <link linkend="udev-list-entry"><returnvalue>udev_list_entry</returnvalue></link> * <link linkend="udev-device-get-sysattr-list-entry">udev_device_get_sysattr_list_entry</link>
+                                                        (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+unsigned long long <link linkend="int"><returnvalue>int</returnvalue></link> <link linkend="udev-device-get-seqnum">udev_device_get_seqnum</link>           (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+unsigned long long <link linkend="int"><returnvalue>int</returnvalue></link> <link linkend="udev-device-get-usec-since-initialized">udev_device_get_usec_since_initialized</link>
+                                                        (<parameter><type>struct udev_device</type> *udev_device</parameter>);
+<link linkend="int"><returnvalue>int</returnvalue></link>                 <link linkend="udev-device-has-tag">udev_device_has_tag</link>                 (<parameter><type>struct udev_device</type> *udev_device</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *tag</parameter>);
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1 id="libudev-udev-device.description" role="desc">
+<title role="desc.title">Description</title>
+<para>
+Representation of kernel sys devices. Devices are uniquely identified
+by their syspath, every device has exactly one path in the kernel sys
+filesystem. Devices usually belong to a kernel subsystem, and have
+a unique name inside that subsystem.
+</para>
+</refsect1>
+<refsect1 id="libudev-udev-device.details" role="details">
+<title role="details.title">Details</title>
+<refsect2 id="udev-device" role="struct">
+<title>struct udev_device</title>
+<indexterm zone="udev-device"><primary sortas="device">udev_device</primary></indexterm>
+<programlisting>struct udev_device;</programlisting>
+<para>
+Opaque object representing one kernel sys device.
+</para></refsect2>
+<refsect2 id="udev-device-ref" role="function">
+<title>udev_device_ref ()</title>
+<indexterm zone="udev-device-ref"><primary sortas="device_ref">udev_device_ref</primary></indexterm>
+<programlisting>struct <link linkend="udev-device"><returnvalue>udev_device</returnvalue></link> * udev_device_ref                    (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+Take a reference of a udev device.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the passed udev device</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-unref" role="function">
+<title>udev_device_unref ()</title>
+<indexterm zone="udev-device-unref"><primary sortas="device_unref">udev_device_unref</primary></indexterm>
+<programlisting>struct <link linkend="udev-device"><returnvalue>udev_device</returnvalue></link> * udev_device_unref                  (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+Drop a reference of a udev device. If the refcount reaches zero,
+the resources of the device will be released.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara><link linkend="NULL:CAPS"><type>NULL</type></link></simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-udev" role="function">
+<title>udev_device_get_udev ()</title>
+<indexterm zone="udev-device-get-udev"><primary sortas="device_get_udev">udev_device_get_udev</primary></indexterm>
+<programlisting>struct <link linkend="udev"><returnvalue>udev</returnvalue></link> *       udev_device_get_udev                (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+Retrieve the udev library context the device was created with.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the udev library context</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-new-from-syspath" role="function">
+<title>udev_device_new_from_syspath ()</title>
+<indexterm zone="udev-device-new-from-syspath"><primary sortas="device_new_from_syspath">udev_device_new_from_syspath</primary></indexterm>
+<programlisting>struct <link linkend="udev-device"><returnvalue>udev_device</returnvalue></link> * udev_device_new_from_syspath       (<parameter><type>struct udev</type> *udev</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *syspath</parameter>);</programlisting>
+<para>
+Create new udev device, and fill in information from the sys
+device and the udev database entry. The syspath is the absolute
+path to the device, including the sys mount point.
+</para>
+<para>
+The initial refcount is 1, and needs to be decremented to
+release the resources of the udev device.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev</parameter>&#160;:</term>
+<listitem><simpara>udev library context</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>syspath</parameter>&#160;:</term>
+<listitem><simpara>sys device path including sys directory</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>a new udev device, or <link linkend="NULL:CAPS"><type>NULL</type></link>, if it does not exist</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-new-from-devnum" role="function">
+<title>udev_device_new_from_devnum ()</title>
+<indexterm zone="udev-device-new-from-devnum"><primary sortas="device_new_from_devnum">udev_device_new_from_devnum</primary></indexterm>
+<programlisting>struct <link linkend="udev-device"><returnvalue>udev_device</returnvalue></link> * udev_device_new_from_devnum        (<parameter><type>struct udev</type> *udev</parameter>,
+                                                         <parameter><link linkend="char"><type>char</type></link> type</parameter>,
+                                                         <parameter><link linkend="dev-t"><type>dev_t</type></link> devnum</parameter>);</programlisting>
+<para>
+Create new udev device, and fill in information from the sys
+device and the udev database entry. The device is looked-up
+by its major/minor number and type. Character and block device
+numbers are not unique across the two types.
+</para>
+<para>
+The initial refcount is 1, and needs to be decremented to
+release the resources of the udev device.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev</parameter>&#160;:</term>
+<listitem><simpara>udev library context</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>type</parameter>&#160;:</term>
+<listitem><simpara>char or block device</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>devnum</parameter>&#160;:</term>
+<listitem><simpara>device major/minor number</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>a new udev device, or <link linkend="NULL:CAPS"><type>NULL</type></link>, if it does not exist</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-new-from-subsystem-sysname" role="function">
+<title>udev_device_new_from_subsystem_sysname ()</title>
+<indexterm zone="udev-device-new-from-subsystem-sysname"><primary sortas="device_new_from_subsystem_sysname">udev_device_new_from_subsystem_sysname</primary></indexterm>
+<programlisting>struct <link linkend="udev-device"><returnvalue>udev_device</returnvalue></link> * udev_device_new_from_subsystem_sysname
+                                                        (<parameter><type>struct udev</type> *udev</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *subsystem</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *sysname</parameter>);</programlisting>
+<para>
+Create new udev device, and fill in information from the sys device
+and the udev database entry. The device is looked up by the subsystem
+and name string of the device, like "mem" / "zero", or "block" / "sda".
+</para>
+<para>
+The initial refcount is 1, and needs to be decremented to
+release the resources of the udev device.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev</parameter>&#160;:</term>
+<listitem><simpara>udev library context</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>subsystem</parameter>&#160;:</term>
+<listitem><simpara>the subsystem of the device</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>sysname</parameter>&#160;:</term>
+<listitem><simpara>the name of the device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>a new udev device, or <link linkend="NULL:CAPS"><type>NULL</type></link>, if it does not exist</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-new-from-device-id" role="function">
+<title>udev_device_new_from_device_id ()</title>
+<indexterm zone="udev-device-new-from-device-id"><primary sortas="device_new_from_device_id">udev_device_new_from_device_id</primary></indexterm>
+<programlisting>struct <link linkend="udev-device"><returnvalue>udev_device</returnvalue></link> * udev_device_new_from_device_id     (<parameter><type>struct udev</type> *udev</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *id</parameter>);</programlisting>
+<para>
+Create new udev device, and fill in information from the sys
+device and the udev database entry. The device is looked-up
+by a special string:
+  b8:2          - block device major:minor
+  c128:1        - char device major:minor
+  n3            - network device ifindex
+  +sound:card29 - kernel driver core subsystem:device name
+</para>
+<para>
+The initial refcount is 1, and needs to be decremented to
+release the resources of the udev device.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev</parameter>&#160;:</term>
+<listitem><simpara>udev library context</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>id</parameter>&#160;:</term>
+<listitem><simpara>text string identifying a kernel device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>a new udev device, or <link linkend="NULL:CAPS"><type>NULL</type></link>, if it does not exist</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-new-from-environment" role="function">
+<title>udev_device_new_from_environment ()</title>
+<indexterm zone="udev-device-new-from-environment"><primary sortas="device_new_from_environment">udev_device_new_from_environment</primary></indexterm>
+<programlisting>struct <link linkend="udev-device"><returnvalue>udev_device</returnvalue></link> * udev_device_new_from_environment   (<parameter><type>struct udev</type> *udev</parameter>);</programlisting>
+<para>
+Create new udev device, and fill in information from the
+current process environment. This only works reliable if
+the process is called from a udev rule. It is usually used
+for tools executed from IMPORT= rules.
+</para>
+<para>
+The initial refcount is 1, and needs to be decremented to
+release the resources of the udev device.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev</parameter>&#160;:</term>
+<listitem><simpara>udev library context</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>a new udev device, or <link linkend="NULL:CAPS"><type>NULL</type></link>, if it does not exist</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-parent" role="function">
+<title>udev_device_get_parent ()</title>
+<indexterm zone="udev-device-get-parent"><primary sortas="device_get_parent">udev_device_get_parent</primary></indexterm>
+<programlisting>struct <link linkend="udev-device"><returnvalue>udev_device</returnvalue></link> * udev_device_get_parent             (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+Find the next parent device, and fill in information from the sys
+device and the udev database entry.
+</para>
+<para>
+Returned device is not referenced. It is attached to the child
+device, and will be cleaned up when the child device is cleaned up.
+</para>
+<para>
+It is not necessarily just the upper level directory, empty or not
+recognized sys directories are ignored.
+</para>
+<para>
+It can be called as many times as needed, without caring about
+references.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>the device to start searching from</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>a new udev device, or <link linkend="NULL:CAPS"><type>NULL</type></link>, if it no parent exist.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-parent-with-subsystem-devtype" role="function">
+<title>udev_device_get_parent_with_subsystem_devtype ()</title>
+<indexterm zone="udev-device-get-parent-with-subsystem-devtype"><primary sortas="device_get_parent_with_subsystem_devtype">udev_device_get_parent_with_subsystem_devtype</primary></indexterm>
+<programlisting>struct <link linkend="udev-device"><returnvalue>udev_device</returnvalue></link> * udev_device_get_parent_with_subsystem_devtype
+                                                        (<parameter><type>struct udev_device</type> *udev_device</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *subsystem</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *devtype</parameter>);</programlisting>
+<para>
+Find the next parent device, with a matching subsystem and devtype
+value, and fill in information from the sys device and the udev
+database entry.
+</para>
+<para>
+If devtype is <link linkend="NULL:CAPS"><type>NULL</type></link>, only subsystem is checked, and any devtype will
+match.
+</para>
+<para>
+Returned device is not referenced. It is attached to the child
+device, and will be cleaned up when the child device is cleaned up.
+</para>
+<para>
+It can be called as many times as needed, without caring about
+references.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device to start searching from</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>subsystem</parameter>&#160;:</term>
+<listitem><simpara>the subsystem of the device</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>devtype</parameter>&#160;:</term>
+<listitem><simpara>the type (DEVTYPE) of the device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>a new udev device, or <link linkend="NULL:CAPS"><type>NULL</type></link> if no matching parent exists.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-devpath" role="function">
+<title>udev_device_get_devpath ()</title>
+<indexterm zone="udev-device-get-devpath"><primary sortas="device_get_devpath">udev_device_get_devpath</primary></indexterm>
+<programlisting>const <link linkend="char"><returnvalue>char</returnvalue></link> *        udev_device_get_devpath             (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+Retrieve the kernel devpath value of the udev device. The path
+does not contain the sys mount point, and starts with a '/'.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the devpath of the udev device</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-subsystem" role="function">
+<title>udev_device_get_subsystem ()</title>
+<indexterm zone="udev-device-get-subsystem"><primary sortas="device_get_subsystem">udev_device_get_subsystem</primary></indexterm>
+<programlisting>const <link linkend="char"><returnvalue>char</returnvalue></link> *        udev_device_get_subsystem           (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+Retrieve the subsystem string of the udev device. The string does not
+contain any "/".
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the subsystem name of the udev device, or <link linkend="NULL:CAPS"><type>NULL</type></link> if it can not be determined</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-devtype" role="function">
+<title>udev_device_get_devtype ()</title>
+<indexterm zone="udev-device-get-devtype"><primary sortas="device_get_devtype">udev_device_get_devtype</primary></indexterm>
+<programlisting>const <link linkend="char"><returnvalue>char</returnvalue></link> *        udev_device_get_devtype             (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+Retrieve the devtype string of the udev device.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the devtype name of the udev device, or <link linkend="NULL:CAPS"><type>NULL</type></link> if it can not be determined</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-syspath" role="function">
+<title>udev_device_get_syspath ()</title>
+<indexterm zone="udev-device-get-syspath"><primary sortas="device_get_syspath">udev_device_get_syspath</primary></indexterm>
+<programlisting>const <link linkend="char"><returnvalue>char</returnvalue></link> *        udev_device_get_syspath             (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+Retrieve the sys path of the udev device. The path is an
+absolute path and starts with the sys mount point.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the sys path of the udev device</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-sysname" role="function">
+<title>udev_device_get_sysname ()</title>
+<indexterm zone="udev-device-get-sysname"><primary sortas="device_get_sysname">udev_device_get_sysname</primary></indexterm>
+<programlisting>const <link linkend="char"><returnvalue>char</returnvalue></link> *        udev_device_get_sysname             (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+Get the kernel device name in /sys.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the name string of the device device</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-sysnum" role="function">
+<title>udev_device_get_sysnum ()</title>
+<indexterm zone="udev-device-get-sysnum"><primary sortas="device_get_sysnum">udev_device_get_sysnum</primary></indexterm>
+<programlisting>const <link linkend="char"><returnvalue>char</returnvalue></link> *        udev_device_get_sysnum              (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+Get the instance number of the device.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the trailing number string of the device name</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-devnode" role="function">
+<title>udev_device_get_devnode ()</title>
+<indexterm zone="udev-device-get-devnode"><primary sortas="device_get_devnode">udev_device_get_devnode</primary></indexterm>
+<programlisting>const <link linkend="char"><returnvalue>char</returnvalue></link> *        udev_device_get_devnode             (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+Retrieve the device node file name belonging to the udev device.
+The path is an absolute path, and starts with the device directory.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the device node file name of the udev device, or <link linkend="NULL:CAPS"><type>NULL</type></link> if no device node exists</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-is-initialized" role="function">
+<title>udev_device_get_is_initialized ()</title>
+<indexterm zone="udev-device-get-is-initialized"><primary sortas="device_get_is_initialized">udev_device_get_is_initialized</primary></indexterm>
+<programlisting><link linkend="int"><returnvalue>int</returnvalue></link>                 udev_device_get_is_initialized      (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+Check if udev has already handled the device and has set up
+device node permissions and context, or has renamed a network
+device.
+</para>
+<para>
+This is only implemented for devices with a device node
+or network interfaces. All other devices return 1 here.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>1 if the device is set up. 0 otherwise.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-devlinks-list-entry" role="function">
+<title>udev_device_get_devlinks_list_entry ()</title>
+<indexterm zone="udev-device-get-devlinks-list-entry"><primary sortas="device_get_devlinks_list_entry">udev_device_get_devlinks_list_entry</primary></indexterm>
+<programlisting>struct <link linkend="udev-list-entry"><returnvalue>udev_list_entry</returnvalue></link> * udev_device_get_devlinks_list_entry
+                                                        (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+Retrieve the list of device links pointing to the device file of
+the udev device. The next list entry can be retrieved with
+<link linkend="udev-list-entry-get-next"><function>udev_list_entry_get_next()</function></link>, which returns <link linkend="NULL:CAPS"><type>NULL</type></link> if no more entries exist.
+The devlink path can be retrieved from the list entry by
+<link linkend="udev-list-entry-get-name"><function>udev_list_entry_get_name()</function></link>. The path is an absolute path, and starts with
+the device directory.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the first entry of the device node link list</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-properties-list-entry" role="function">
+<title>udev_device_get_properties_list_entry ()</title>
+<indexterm zone="udev-device-get-properties-list-entry"><primary sortas="device_get_properties_list_entry">udev_device_get_properties_list_entry</primary></indexterm>
+<programlisting>struct <link linkend="udev-list-entry"><returnvalue>udev_list_entry</returnvalue></link> * udev_device_get_properties_list_entry
+                                                        (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+Retrieve the list of key/value device properties of the udev
+device. The next list entry can be retrieved with <link linkend="udev-list-entry-get-next"><function>udev_list_entry_get_next()</function></link>,
+which returns <link linkend="NULL:CAPS"><type>NULL</type></link> if no more entries exist. The property name
+can be retrieved from the list entry by <link linkend="udev-list-entry-get-name"><function>udev_list_entry_get_name()</function></link>,
+the property value by <link linkend="udev-list-entry-get-value"><function>udev_list_entry_get_value()</function></link>.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the first entry of the property list</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-tags-list-entry" role="function">
+<title>udev_device_get_tags_list_entry ()</title>
+<indexterm zone="udev-device-get-tags-list-entry"><primary sortas="device_get_tags_list_entry">udev_device_get_tags_list_entry</primary></indexterm>
+<programlisting>struct <link linkend="udev-list-entry"><returnvalue>udev_list_entry</returnvalue></link> * udev_device_get_tags_list_entry
+                                                        (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+Retrieve the list of tags attached to the udev device. The next
+list entry can be retrieved with <link linkend="udev-list-entry-get-next"><function>udev_list_entry_get_next()</function></link>,
+which returns <link linkend="NULL:CAPS"><type>NULL</type></link> if no more entries exist. The tag string
+can be retrieved from the list entry by <link linkend="udev-list-entry-get-name"><function>udev_list_entry_get_name()</function></link>.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the first entry of the tag list</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-property-value" role="function">
+<title>udev_device_get_property_value ()</title>
+<indexterm zone="udev-device-get-property-value"><primary sortas="device_get_property_value">udev_device_get_property_value</primary></indexterm>
+<programlisting>const <link linkend="char"><returnvalue>char</returnvalue></link> *        udev_device_get_property_value      (<parameter><type>struct udev_device</type> *udev_device</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *key</parameter>);</programlisting>
+<para>
+Get the value of a given property.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>key</parameter>&#160;:</term>
+<listitem><simpara>property name</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the property string, or <link linkend="NULL:CAPS"><type>NULL</type></link> if there is no such property.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-driver" role="function">
+<title>udev_device_get_driver ()</title>
+<indexterm zone="udev-device-get-driver"><primary sortas="device_get_driver">udev_device_get_driver</primary></indexterm>
+<programlisting>const <link linkend="char"><returnvalue>char</returnvalue></link> *        udev_device_get_driver              (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+Get the kernel driver name.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the driver name string, or <link linkend="NULL:CAPS"><type>NULL</type></link> if there is no driver attached.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-devnum" role="function">
+<title>udev_device_get_devnum ()</title>
+<indexterm zone="udev-device-get-devnum"><primary sortas="device_get_devnum">udev_device_get_devnum</primary></indexterm>
+<programlisting><link linkend="dev-t"><returnvalue>dev_t</returnvalue></link>               udev_device_get_devnum              (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+Get the device major/minor number.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the dev_t number.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-action" role="function">
+<title>udev_device_get_action ()</title>
+<indexterm zone="udev-device-get-action"><primary sortas="device_get_action">udev_device_get_action</primary></indexterm>
+<programlisting>const <link linkend="char"><returnvalue>char</returnvalue></link> *        udev_device_get_action              (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+This is only valid if the device was received through a monitor. Devices read from
+sys do not have an action string. Usual actions are: add, remove, change, online,
+offline.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the kernel action value, or <link linkend="NULL:CAPS"><type>NULL</type></link> if there is no action value available.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-sysattr-value" role="function">
+<title>udev_device_get_sysattr_value ()</title>
+<indexterm zone="udev-device-get-sysattr-value"><primary sortas="device_get_sysattr_value">udev_device_get_sysattr_value</primary></indexterm>
+<programlisting>const <link linkend="char"><returnvalue>char</returnvalue></link> *        udev_device_get_sysattr_value       (<parameter><type>struct udev_device</type> *udev_device</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *sysattr</parameter>);</programlisting>
+<para>
+The retrieved value is cached in the device. Repeated calls will return the same
+value and not open the attribute again.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>sysattr</parameter>&#160;:</term>
+<listitem><simpara>attribute name</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the content of a sys attribute file, or <link linkend="NULL:CAPS"><type>NULL</type></link> if there is no sys attribute value.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-set-sysattr-value" role="function">
+<title>udev_device_set_sysattr_value ()</title>
+<indexterm zone="udev-device-set-sysattr-value"><primary sortas="device_set_sysattr_value">udev_device_set_sysattr_value</primary></indexterm>
+<programlisting><link linkend="int"><returnvalue>int</returnvalue></link>                 udev_device_set_sysattr_value       (<parameter><type>struct udev_device</type> *udev_device</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *sysattr</parameter>,
+                                                         <parameter><link linkend="char"><type>char</type></link> *value</parameter>);</programlisting>
+<para>
+Update the contents of the sys attribute and the cached value of the device.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>sysattr</parameter>&#160;:</term>
+<listitem><simpara>attribute name</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>value</parameter>&#160;:</term>
+<listitem><simpara>new value to be set</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>Negative error code on failure or 0 on success.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-sysattr-list-entry" role="function">
+<title>udev_device_get_sysattr_list_entry ()</title>
+<indexterm zone="udev-device-get-sysattr-list-entry"><primary sortas="device_get_sysattr_list_entry">udev_device_get_sysattr_list_entry</primary></indexterm>
+<programlisting>struct <link linkend="udev-list-entry"><returnvalue>udev_list_entry</returnvalue></link> * udev_device_get_sysattr_list_entry
+                                                        (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+Retrieve the list of available sysattrs, with value being empty;
+This just return all available sysfs attributes for a particular
+device without reading their values.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the first entry of the property list</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-seqnum" role="function">
+<title>udev_device_get_seqnum ()</title>
+<indexterm zone="udev-device-get-seqnum"><primary sortas="device_get_seqnum">udev_device_get_seqnum</primary></indexterm>
+<programlisting>unsigned long long <link linkend="int"><returnvalue>int</returnvalue></link> udev_device_get_seqnum           (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+This is only valid if the device was received through a monitor. Devices read from
+sys do not have a sequence number.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the kernel event sequence number, or 0 if there is no sequence number available.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-get-usec-since-initialized" role="function">
+<title>udev_device_get_usec_since_initialized ()</title>
+<indexterm zone="udev-device-get-usec-since-initialized"><primary sortas="device_get_usec_since_initialized">udev_device_get_usec_since_initialized</primary></indexterm>
+<programlisting>unsigned long long <link linkend="int"><returnvalue>int</returnvalue></link> udev_device_get_usec_since_initialized
+                                                        (<parameter><type>struct udev_device</type> *udev_device</parameter>);</programlisting>
+<para>
+Return the number of microseconds passed since udev set up the
+device for the first time.
+</para>
+<para>
+This is only implemented for devices with need to store properties
+in the udev database. All other devices return 0 here.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the number of microseconds since the device was first seen.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-device-has-tag" role="function">
+<title>udev_device_has_tag ()</title>
+<indexterm zone="udev-device-has-tag"><primary sortas="device_has_tag">udev_device_has_tag</primary></indexterm>
+<programlisting><link linkend="int"><returnvalue>int</returnvalue></link>                 udev_device_has_tag                 (<parameter><type>struct udev_device</type> *udev_device</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *tag</parameter>);</programlisting>
+<para>
+Check if a given device has a certain tag associated.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev_device</parameter>&#160;:</term>
+<listitem><simpara>udev device</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>tag</parameter>&#160;:</term>
+<listitem><simpara>tag name</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>1 if the tag is found. 0 otherwise.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+
+</refsect1>
+
+</refentry>

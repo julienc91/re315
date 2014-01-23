@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+               "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+  <!ENTITY version SYSTEM "version.xml">
+]>
+<refentry id="libudev-udev-hwdb">
+<refmeta>
+<refentrytitle role="top_of_page" id="libudev-udev-hwdb.top_of_page">udev_hwdb</refentrytitle>
+<manvolnum>3</manvolnum>
+<refmiscinfo>
+  LIBUDEV Library
+</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>udev_hwdb</refname>
+<refpurpose>retrieve properties from the hardware database</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv id="libudev-udev-hwdb.synopsis" role="synopsis">
+<title role="synopsis.title">Synopsis</title>
+
+<synopsis>struct              <link linkend="udev-hwdb">udev_hwdb</link>;
+struct <link linkend="udev-hwdb"><returnvalue>udev_hwdb</returnvalue></link> *  <link linkend="udev-hwdb-ref">udev_hwdb_ref</link>                       (<parameter><type>struct udev_hwdb</type> *hwdb</parameter>);
+struct <link linkend="udev-hwdb"><returnvalue>udev_hwdb</returnvalue></link> *  <link linkend="udev-hwdb-unref">udev_hwdb_unref</link>                     (<parameter><type>struct udev_hwdb</type> *hwdb</parameter>);
+struct <link linkend="udev-hwdb"><returnvalue>udev_hwdb</returnvalue></link> *  <link linkend="udev-hwdb-new">udev_hwdb_new</link>                       (<parameter><type>struct udev</type> *udev</parameter>);
+struct <link linkend="udev-list-entry"><returnvalue>udev_list_entry</returnvalue></link> * <link linkend="udev-hwdb-get-properties-list-entry">udev_hwdb_get_properties_list_entry</link>
+                                                        (<parameter><type>struct udev_hwdb</type> *hwdb</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *modalias</parameter>,
+                                                         <parameter>unsigned <link linkend="int"><type>int</type></link> flags</parameter>);
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1 id="libudev-udev-hwdb.description" role="desc">
+<title role="desc.title">Description</title>
+<para>
+Libudev hardware database interface.
+</para>
+</refsect1>
+<refsect1 id="libudev-udev-hwdb.details" role="details">
+<title role="details.title">Details</title>
+<refsect2 id="udev-hwdb" role="struct">
+<title>struct udev_hwdb</title>
+<indexterm zone="udev-hwdb"><primary sortas="hwdb">udev_hwdb</primary></indexterm>
+<programlisting>struct udev_hwdb;</programlisting>
+<para>
+Opaque object representing the hardware database.
+</para></refsect2>
+<refsect2 id="udev-hwdb-ref" role="function">
+<title>udev_hwdb_ref ()</title>
+<indexterm zone="udev-hwdb-ref"><primary sortas="hwdb_ref">udev_hwdb_ref</primary></indexterm>
+<programlisting>struct <link linkend="udev-hwdb"><returnvalue>udev_hwdb</returnvalue></link> *  udev_hwdb_ref                       (<parameter><type>struct udev_hwdb</type> *hwdb</parameter>);</programlisting>
+<para>
+Take a reference of a hwdb context.
+</para><variablelist role="params">
+<varlistentry><term><parameter>hwdb</parameter>&#160;:</term>
+<listitem><simpara>context</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the passed enumeration context</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-hwdb-unref" role="function">
+<title>udev_hwdb_unref ()</title>
+<indexterm zone="udev-hwdb-unref"><primary sortas="hwdb_unref">udev_hwdb_unref</primary></indexterm>
+<programlisting>struct <link linkend="udev-hwdb"><returnvalue>udev_hwdb</returnvalue></link> *  udev_hwdb_unref                     (<parameter><type>struct udev_hwdb</type> *hwdb</parameter>);</programlisting>
+<para>
+Drop a reference of a hwdb context. If the refcount reaches zero,
+all resources of the hwdb context will be released.
+</para><variablelist role="params">
+<varlistentry><term><parameter>hwdb</parameter>&#160;:</term>
+<listitem><simpara>context</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara><link linkend="NULL:CAPS"><type>NULL</type></link></simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-hwdb-new" role="function">
+<title>udev_hwdb_new ()</title>
+<indexterm zone="udev-hwdb-new"><primary sortas="hwdb_new">udev_hwdb_new</primary></indexterm>
+<programlisting>struct <link linkend="udev-hwdb"><returnvalue>udev_hwdb</returnvalue></link> *  udev_hwdb_new                       (<parameter><type>struct udev</type> *udev</parameter>);</programlisting>
+<para>
+Create a hardware database context to query properties for devices.
+</para><variablelist role="params">
+<varlistentry><term><parameter>udev</parameter>&#160;:</term>
+<listitem><simpara>udev library context</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>a hwdb context.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-hwdb-get-properties-list-entry" role="function">
+<title>udev_hwdb_get_properties_list_entry ()</title>
+<indexterm zone="udev-hwdb-get-properties-list-entry"><primary sortas="hwdb_get_properties_list_entry">udev_hwdb_get_properties_list_entry</primary></indexterm>
+<programlisting>struct <link linkend="udev-list-entry"><returnvalue>udev_list_entry</returnvalue></link> * udev_hwdb_get_properties_list_entry
+                                                        (<parameter><type>struct udev_hwdb</type> *hwdb</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *modalias</parameter>,
+                                                         <parameter>unsigned <link linkend="int"><type>int</type></link> flags</parameter>);</programlisting>
+<para>
+Lookup a matching device in the hardware database. The lookup key is a
+modalias string, whose formats are defined for the Linux kernel modules.
+Examples are: pci:v00008086d00001C2D*, usb:v04F2pB221*. The first entry
+of a list of retrieved properties is returned.
+</para><variablelist role="params">
+<varlistentry><term><parameter>hwdb</parameter>&#160;:</term>
+<listitem><simpara>context</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>modalias</parameter>&#160;:</term>
+<listitem><simpara>modalias string</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>flags</parameter>&#160;:</term>
+<listitem><simpara>(unused)</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>a udev_list_entry.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+
+</refsect1>
+
+</refentry>

@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+               "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+  <!ENTITY version SYSTEM "version.xml">
+]>
+<refentry id="libudev-udev-list">
+<refmeta>
+<refentrytitle role="top_of_page" id="libudev-udev-list.top_of_page">udev_list</refentrytitle>
+<manvolnum>3</manvolnum>
+<refmiscinfo>
+  LIBUDEV Library
+</refmiscinfo>
+</refmeta>
+<refnamediv>
+<refname>udev_list</refname>
+<refpurpose>list operation</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv id="libudev-udev-list.synopsis" role="synopsis">
+<title role="synopsis.title">Synopsis</title>
+
+<synopsis>struct              <link linkend="udev-list-entry">udev_list_entry</link>;
+struct <link linkend="udev-list-entry"><returnvalue>udev_list_entry</returnvalue></link> * <link linkend="udev-list-entry-get-next">udev_list_entry_get_next</link>       (<parameter><type>struct udev_list_entry</type> *list_entry</parameter>);
+struct <link linkend="udev-list-entry"><returnvalue>udev_list_entry</returnvalue></link> * <link linkend="udev-list-entry-get-by-name">udev_list_entry_get_by_name</link>    (<parameter><type>struct udev_list_entry</type> *list_entry</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *name</parameter>);
+const <link linkend="char"><returnvalue>char</returnvalue></link> *        <link linkend="udev-list-entry-get-name">udev_list_entry_get_name</link>            (<parameter><type>struct udev_list_entry</type> *list_entry</parameter>);
+const <link linkend="char"><returnvalue>char</returnvalue></link> *        <link linkend="udev-list-entry-get-value">udev_list_entry_get_value</link>           (<parameter><type>struct udev_list_entry</type> *list_entry</parameter>);
+#define             <link linkend="udev-list-entry-foreach">udev_list_entry_foreach</link>             (list_entry,
+                                                         first_entry)
+</synopsis>
+</refsynopsisdiv>
+
+<refsect1 id="libudev-udev-list.description" role="desc">
+<title role="desc.title">Description</title>
+<para>
+Libudev list operations.
+</para>
+</refsect1>
+<refsect1 id="libudev-udev-list.details" role="details">
+<title role="details.title">Details</title>
+<refsect2 id="udev-list-entry" role="struct">
+<title>struct udev_list_entry</title>
+<indexterm zone="udev-list-entry"><primary sortas="list_entry">udev_list_entry</primary></indexterm>
+<programlisting>struct udev_list_entry;</programlisting>
+<para>
+Opaque object representing one entry in a list. An entry contains
+contains a name, and optionally a value.
+</para></refsect2>
+<refsect2 id="udev-list-entry-get-next" role="function">
+<title>udev_list_entry_get_next ()</title>
+<indexterm zone="udev-list-entry-get-next"><primary sortas="list_entry_get_next">udev_list_entry_get_next</primary></indexterm>
+<programlisting>struct <link linkend="udev-list-entry"><returnvalue>udev_list_entry</returnvalue></link> * udev_list_entry_get_next       (<parameter><type>struct udev_list_entry</type> *list_entry</parameter>);</programlisting>
+<para>
+Get the next entry from the list.
+</para><variablelist role="params">
+<varlistentry><term><parameter>list_entry</parameter>&#160;:</term>
+<listitem><simpara>current entry</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>udev_list_entry, <link linkend="NULL:CAPS"><type>NULL</type></link> if no more entries are available.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-list-entry-get-by-name" role="function">
+<title>udev_list_entry_get_by_name ()</title>
+<indexterm zone="udev-list-entry-get-by-name"><primary sortas="list_entry_get_by_name">udev_list_entry_get_by_name</primary></indexterm>
+<programlisting>struct <link linkend="udev-list-entry"><returnvalue>udev_list_entry</returnvalue></link> * udev_list_entry_get_by_name    (<parameter><type>struct udev_list_entry</type> *list_entry</parameter>,
+                                                         <parameter>const <link linkend="char"><type>char</type></link> *name</parameter>);</programlisting>
+<para>
+Lookup an entry in the list with a certain name.
+</para><variablelist role="params">
+<varlistentry><term><parameter>list_entry</parameter>&#160;:</term>
+<listitem><simpara>current entry</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>name</parameter>&#160;:</term>
+<listitem><simpara>name string to match</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>udev_list_entry, <link linkend="NULL:CAPS"><type>NULL</type></link> if no matching entry is found.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-list-entry-get-name" role="function">
+<title>udev_list_entry_get_name ()</title>
+<indexterm zone="udev-list-entry-get-name"><primary sortas="list_entry_get_name">udev_list_entry_get_name</primary></indexterm>
+<programlisting>const <link linkend="char"><returnvalue>char</returnvalue></link> *        udev_list_entry_get_name            (<parameter><type>struct udev_list_entry</type> *list_entry</parameter>);</programlisting>
+<para>
+Get the name of a list entry.
+</para><variablelist role="params">
+<varlistentry><term><parameter>list_entry</parameter>&#160;:</term>
+<listitem><simpara>current entry</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the name string of this entry.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-list-entry-get-value" role="function">
+<title>udev_list_entry_get_value ()</title>
+<indexterm zone="udev-list-entry-get-value"><primary sortas="list_entry_get_value">udev_list_entry_get_value</primary></indexterm>
+<programlisting>const <link linkend="char"><returnvalue>char</returnvalue></link> *        udev_list_entry_get_value           (<parameter><type>struct udev_list_entry</type> *list_entry</parameter>);</programlisting>
+<para>
+Get the value of list entry.
+</para><variablelist role="params">
+<varlistentry><term><parameter>list_entry</parameter>&#160;:</term>
+<listitem><simpara>current entry</simpara></listitem></varlistentry>
+<varlistentry><term><emphasis>Returns</emphasis>&#160;:</term><listitem><simpara>the value string of this entry.</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+<refsect2 id="udev-list-entry-foreach" role="macro">
+<title>udev_list_entry_foreach()</title>
+<indexterm zone="udev-list-entry-foreach"><primary sortas="list_entry_foreach">udev_list_entry_foreach</primary></indexterm>
+<programlisting>#define             udev_list_entry_foreach(list_entry, first_entry)</programlisting>
+<para>
+Helper to iterate over all entries of a list.
+</para><variablelist role="params">
+<varlistentry><term><parameter>list_entry</parameter>&#160;:</term>
+<listitem><simpara>entry to store the current position</simpara></listitem></varlistentry>
+<varlistentry><term><parameter>first_entry</parameter>&#160;:</term>
+<listitem><simpara>first entry to start with</simpara></listitem></varlistentry>
+</variablelist></refsect2>
+
+</refsect1>
+
+</refentry>

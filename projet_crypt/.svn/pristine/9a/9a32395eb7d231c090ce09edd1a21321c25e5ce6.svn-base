@@ -1,0 +1,519 @@
+/*-*- Mode: C; c-basic-offset: 8; indent-tabs-mode: nil -*-*/
+
+/***
+  This file is part of systemd.
+
+  Copyright 2010 Lennart Poettering
+
+  systemd is free software; you can redistribute it and/or modify it
+  under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation; either version 2.1 of the License, or
+  (at your option) any later version.
+
+  systemd is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public License
+  along with systemd; If not, see <http://www.gnu.org/licenses/>.
+***/
+
+#include <sys/prctl.h>
+
+#include "bus-util.h"
+#include "missing.h"
+#include "ioprio.h"
+#include "strv.h"
+#include "syscall-list.h"
+#include "fileio.h"
+#include "execute.h"
+#include "dbus-execute.h"
+
+BUS_DEFINE_PROPERTY_GET_ENUM(bus_property_get_exec_output, exec_output, ExecOutput);
+
+static BUS_DEFINE_PROPERTY_GET_ENUM(property_get_exec_input, exec_input, ExecInput);
+
+static int property_get_environment_files(
+                sd_bus *bus,
+                const char *path,
+                const char *interface,
+                const char *property,
+                sd_bus_message *reply,
+                void *userdata,
+                sd_bus_error *error) {
+
+        ExecContext *c = userdata;
+        char **j;
+        int r;
+
+        assert(bus);
+        assert(reply);
+        assert(c);
+
+        r = sd_bus_message_open_container(reply, 'a', "(sb)");
+        if (r < 0)
+                return r;
+
+        STRV_FOREACH(j, c->environment_files) {
+                const char *fn = *j;
+
+                r = sd_bus_message_append(reply, "(sb)", fn[0] == '-' ? fn + 1 : fn, fn[0] == '-');
+                if (r < 0)
+                        return r;
+        }
+
+        return sd_bus_message_close_container(reply);
+}
+
+static int property_get_rlimit(
+                sd_bus *bus,
+                const char *path,
+                const char *interface,
+                const char *property,
+                sd_bus_message *reply,
+                void *userdata,
+                sd_bus_error *error) {
+
+        struct rlimit *rl;
+        uint64_t u;
+
+        assert(bus);
+        assert(reply);
+        assert(userdata);
+
+        rl = *(struct rlimit**) userdata;
+        if (rl)
+                u = (uint64_t) rl->rlim_max;
+        else {
+                struct rlimit buf = {};
+                int z;
+
+                z = rlimit_from_string(property);
+                assert(z >= 0);
+
+                getrlimit(z, &buf);
+
+                u = (uint64_t) buf.rlim_max;
+        }
+
+        return sd_bus_message_append(reply, "t", u);
+}
+
+static int property_get_oom_score_adjust(
+                sd_bus *bus,
+                const char *path,
+                const char *interface,
+                const char *property,
+                sd_bus_message *reply,
+                void *userdata,
+                sd_bus_error *error) {
+
+
+        ExecContext *c = userdata;
+        int32_t n;
+
+        assert(bus);
+        assert(reply);
+        assert(c);
+
+        if (c->oom_score_adjust_set)
+                n = c->oom_score_adjust;
+        else {
+                _cleanup_free_ char *t = NULL;
+
+                n = 0;
+                if (read_one_line_file("/proc/self/oom_score_adj", &t) >= 0)
+                        safe_atoi(t, &n);
+        }
+
+        return sd_bus_message_append(reply, "i", n);
+}
+
+static int property_get_nice(
+                sd_bus *bus,
+                const char *path,
+                const char *interface,
+                const char *property,
+                sd_bus_message *reply,
+                void *userdata,
+                sd_bus_error *error) {
+
+
+        ExecContext *c = userdata;
+        int32_t n;
+
+        assert(bus);
+        assert(reply);
+        assert(c);
+
+        if (c->nice_set)
+                n = c->nice;
+        else {
+                errno = 0;
+                n = getpriority(PRIO_PROCESS, 0);
+                if (errno != 0)
+                        n = 0;
+        }
+
+        return sd_bus_message_append(reply, "i", n);
+}
+
+static int property_get_ioprio(
+                sd_bus *bus,
+                const char *path,
+                const char *interface,
+                const char *property,
+                sd_bus_message *reply,
+                void *userdata,
+                sd_bus_error *error) {
+
+
+        ExecContext *c = userdata;
+        int32_t n;
+
+        assert(bus);
+        assert(reply);
+        assert(c);
+
+        if (c->ioprio_set)
+                n = c->ioprio;
+        else {
+                n = ioprio_get(IOPRIO_WHO_PROCESS, 0);
+                if (n < 0)
+                        n = IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE, 4);
+        }
+
+        return sd_bus_message_append(reply, "i", n);
+}
+
+static int property_get_cpu_sched_policy(
+                sd_bus *bus,
+                const char *path,
+                const char *interface,
+                const char *property,
+                sd_bus_message *reply,
+                void *userdata,
+                sd_bus_error *error) {
+
+        ExecContext *c = userdata;
+        int32_t n;
+
+        assert(bus);
+        assert(reply);
+        assert(c);
+
+        if (c->cpu_sched_set)
+                n = c->cpu_sched_policy;
+        else {
+                n = sched_getscheduler(0);
+                if (n < 0)
+                        n = SCHED_OTHER;
+        }
+
+        return sd_bus_message_append(reply, "i", n);
+}
+
+static int property_get_cpu_sched_priority(
+                sd_bus *bus,
+                const char *path,
+                const char *interface,
+                const char *property,
+                sd_bus_message *reply,
+                void *userdata,
+                sd_bus_error *error) {
+
+        ExecContext *c = userdata;
+        int32_t n;
+
+        assert(bus);
+        assert(reply);
+        assert(c);
+
+        if (c->cpu_sched_set)
+                n = c->cpu_sched_priority;
+        else {
+                struct sched_param p = {};
+
+                if (sched_getparam(0, &p) >= 0)
+                        n = p.sched_priority;
+                else
+                        n = 0;
+        }
+
+        return sd_bus_message_append(reply, "i", n);
+}
+
+static int property_get_cpu_affinity(
+                sd_bus *bus,
+                const char *path,
+                const char *interface,
+                const char *property,
+                sd_bus_message *reply,
+                void *userdata,
+                sd_bus_error *error) {
+
+        ExecContext *c = userdata;
+
+        assert(bus);
+        assert(reply);
+        assert(c);
+
+        if (c->cpuset)
+                return sd_bus_message_append_array(reply, 'y', c->cpuset, CPU_ALLOC_SIZE(c->cpuset_ncpus));
+        else
+                return sd_bus_message_append_array(reply, 'y', NULL, 0);
+}
+
+static int property_get_timer_slack_nsec(
+                sd_bus *bus,
+                const char *path,
+                const char *interface,
+                const char *property,
+                sd_bus_message *reply,
+                void *userdata,
+                sd_bus_error *error) {
+
+        ExecContext *c = userdata;
+        uint64_t u;
+
+        assert(bus);
+        assert(reply);
+        assert(c);
+
+        if (c->timer_slack_nsec != (nsec_t) -1)
+                u = (uint64_t) c->timer_slack_nsec;
+        else
+                u = (uint64_t) prctl(PR_GET_TIMERSLACK);
+
+        return sd_bus_message_append(reply, "t", u);
+}
+
+static int property_get_capability_bounding_set(
+                sd_bus *bus,
+                const char *path,
+                const char *interface,
+                const char *property,
+                sd_bus_message *reply,
+                void *userdata,
+                sd_bus_error *error) {
+
+        ExecContext *c = userdata;
+
+        assert(bus);
+        assert(reply);
+        assert(c);
+
+        /* We store this negated internally, to match the kernel, but
+         * we expose it normalized. */
+        return sd_bus_message_append(reply, "t", ~c->capability_bounding_set_drop);
+}
+
+static int property_get_capabilities(
+                sd_bus *bus,
+                const char *path,
+                const char *interface,
+                const char *property,
+                sd_bus_message *reply,
+                void *userdata,
+                sd_bus_error *error) {
+
+        ExecContext *c = userdata;
+        char *t = NULL;
+        const char *s;
+        int r;
+
+        assert(bus);
+        assert(reply);
+        assert(c);
+
+        if (c->capabilities)
+                s = t = cap_to_text(c->capabilities, NULL);
+        else
+                s = "";
+
+        if (!s)
+                return -ENOMEM;
+
+        r = sd_bus_message_append(reply, "s", s);
+
+        if (t)
+                cap_free(t);
+
+        return r;
+}
+
+static int property_get_syscall_filter(
+                sd_bus *bus,
+                const char *path,
+                const char *interface,
+                const char *property,
+                sd_bus_message *reply,
+                void *userdata,
+                sd_bus_error *error) {
+
+        ExecContext *c = userdata;
+
+        assert(bus);
+        assert(reply);
+        assert(c);
+
+        if (c->syscall_filter)
+                return sd_bus_message_append_array(reply, 'u', c->syscall_filter, (syscall_max() + 31) >> 4);
+        else
+                return sd_bus_message_append_array(reply, 'u', NULL, 0);
+}
+
+const sd_bus_vtable bus_exec_vtable[] = {
+        SD_BUS_VTABLE_START(0),
+        SD_BUS_PROPERTY("Environment", "as", NULL, offsetof(ExecContext, environment), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("EnvironmentFiles", "a(sb)", property_get_environment_files, 0, SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("UMask", "u", bus_property_get_mode, offsetof(ExecContext, umask), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("LimitCPU", "t", property_get_rlimit, offsetof(ExecContext, rlimit[RLIMIT_CPU]), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("LimitFSIZE", "t", property_get_rlimit, offsetof(ExecContext, rlimit[RLIMIT_FSIZE]), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("LimitDATA", "t", property_get_rlimit, offsetof(ExecContext, rlimit[RLIMIT_DATA]), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("LimitSTACK", "t", property_get_rlimit, offsetof(ExecContext, rlimit[RLIMIT_STACK]), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("LimitCORE", "t", property_get_rlimit, offsetof(ExecContext, rlimit[RLIMIT_CORE]), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("LimitRSS", "t", property_get_rlimit, offsetof(ExecContext, rlimit[RLIMIT_RSS]), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("LimitNOFILE", "t", property_get_rlimit, offsetof(ExecContext, rlimit[RLIMIT_NOFILE]), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("LimitAS", "t", property_get_rlimit, offsetof(ExecContext, rlimit[RLIMIT_AS]), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("LimitNPROC", "t", property_get_rlimit, offsetof(ExecContext, rlimit[RLIMIT_NPROC]), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("LimitMEMLOCK", "t", property_get_rlimit, offsetof(ExecContext, rlimit[RLIMIT_MEMLOCK]), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("LimitLOCKS", "t", property_get_rlimit, offsetof(ExecContext, rlimit[RLIMIT_LOCKS]), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("LimitSIGPENDING", "t", property_get_rlimit, offsetof(ExecContext, rlimit[RLIMIT_SIGPENDING]), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("LimitMSGQUEUE", "t", property_get_rlimit, offsetof(ExecContext, rlimit[RLIMIT_MSGQUEUE]), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("LimitNICE", "t", property_get_rlimit, offsetof(ExecContext, rlimit[RLIMIT_NICE]), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("LimitRTPRIO", "t", property_get_rlimit, offsetof(ExecContext, rlimit[RLIMIT_RTPRIO]), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("LimitRTTIME", "t", property_get_rlimit, offsetof(ExecContext, rlimit[RLIMIT_RTTIME]), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("WorkingDirectory", "s", NULL, offsetof(ExecContext, working_directory), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("RootDirectory", "s", NULL, offsetof(ExecContext, root_directory), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("OOMScoreAdjust", "i", property_get_oom_score_adjust, 0, SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("Nice", "i", property_get_nice, 0, SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("IOScheduling", "i", property_get_ioprio, 0, SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("CPUSchedulingPolicy", "i", property_get_cpu_sched_policy, 0, SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("CPUSchedulingPriority", "i", property_get_cpu_sched_priority, 0, SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("CPUAffinity", "ay", property_get_cpu_affinity, 0, SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("TimerSlackNSec", "t", property_get_timer_slack_nsec, 0, SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("CPUSchedulingResetOnFork", "b", bus_property_get_bool, offsetof(ExecContext, cpu_sched_reset_on_fork), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("NonBlocking", "b", bus_property_get_bool, offsetof(ExecContext, non_blocking), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("StandardInput", "s", property_get_exec_input, offsetof(ExecContext, std_input), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("StandardOutput", "s", bus_property_get_exec_output, offsetof(ExecContext, std_output), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("StandardError", "s", bus_property_get_exec_output, offsetof(ExecContext, std_error), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("TTYPath", "s", NULL, offsetof(ExecContext, tty_path), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("TTYReset", "b", bus_property_get_bool, offsetof(ExecContext, tty_reset), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("TTYVHangup", "b", bus_property_get_bool, offsetof(ExecContext, tty_vhangup), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("TTYVTDisallocate", "b", bus_property_get_bool, offsetof(ExecContext, tty_vt_disallocate), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("SyslogPriority", "i", bus_property_get_int, offsetof(ExecContext, syslog_priority), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("SyslogIdentifier", "s", NULL, offsetof(ExecContext, syslog_identifier), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("SyslogLevelPrefix", "b", bus_property_get_bool, offsetof(ExecContext, syslog_level_prefix), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("Capabilities", "s", property_get_capabilities, 0, SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("SecureBits", "i", bus_property_get_int, offsetof(ExecContext, secure_bits), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("CapabilityBoundingSet", "t", property_get_capability_bounding_set, 0, SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("User", "s", NULL, offsetof(ExecContext, user), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("Group", "s", NULL, offsetof(ExecContext, group), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("SupplementaryGroups", "as", NULL, offsetof(ExecContext, supplementary_groups), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("TCPWrapName", "s", NULL, offsetof(ExecContext, tcpwrap_name), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("PAMName", "s", NULL, offsetof(ExecContext, pam_name), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("ReadWriteDirectories", "as", NULL, offsetof(ExecContext, read_write_dirs), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("ReadOnlyDirectories", "as", NULL, offsetof(ExecContext, read_only_dirs), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("InaccessibleDirectories", "as", NULL, offsetof(ExecContext, inaccessible_dirs), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("MountFlags", "t", bus_property_get_ulong, offsetof(ExecContext, mount_flags), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("PrivateTmp", "b", bus_property_get_bool, offsetof(ExecContext, private_tmp), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("PrivateNetwork", "b", bus_property_get_bool, offsetof(ExecContext, private_network), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("SameProcessGroup", "b", bus_property_get_bool, offsetof(ExecContext, same_pgrp), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("UtmpIdentifier", "s", NULL, offsetof(ExecContext, utmp_id), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("IgnoreSIGPIPE", "b", bus_property_get_bool, offsetof(ExecContext, ignore_sigpipe), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("NoNewPrivileges", "b", bus_property_get_bool, offsetof(ExecContext, no_new_privileges), SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("SystemCallFilter", "au", property_get_syscall_filter, 0, SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_VTABLE_END
+};
+
+static int append_exec_command(sd_bus_message *reply, ExecCommand *c) {
+        int r;
+
+        assert(reply);
+        assert(c);
+
+        if (!c->path)
+                return 0;
+
+        r = sd_bus_message_open_container(reply, 'r', "sasbttttuii");
+        if (r < 0)
+                return r;
+
+        r = sd_bus_message_append(reply, "s", c->path);
+        if (r < 0)
+                return r;
+
+        r = sd_bus_message_append_strv(reply, c->argv);
+        if (r < 0)
+                return r;
+
+        r = sd_bus_message_append(reply, "bttttuii",
+                                  c->ignore,
+                                  c->exec_status.start_timestamp.realtime,
+                                  c->exec_status.start_timestamp.monotonic,
+                                  c->exec_status.exit_timestamp.realtime,
+                                  c->exec_status.exit_timestamp.monotonic,
+                                  (uint32_t) c->exec_status.pid,
+                                  (int32_t) c->exec_status.code,
+                                  (int32_t) c->exec_status.status);
+        if (r < 0)
+                return r;
+
+        return sd_bus_message_close_container(reply);
+}
+
+int bus_property_get_exec_command(
+                sd_bus *bus,
+                const char *path,
+                const char *interface,
+                const char *property,
+                sd_bus_message *reply,
+                void *userdata,
+                sd_bus_error *ret_error) {
+
+        ExecCommand *c = (ExecCommand*) userdata;
+        int r;
+
+        assert(bus);
+        assert(reply);
+
+        r = sd_bus_message_open_container(reply, 'a', "(sasbttttuii)");
+        if (r < 0)
+                return r;
+
+        r = append_exec_command(reply, c);
+        if (r < 0)
+                return r;
+
+        return sd_bus_message_close_container(reply);
+}
+
+int bus_property_get_exec_command_list(
+                sd_bus *bus,
+                const char *path,
+                const char *interface,
+                const char *property,
+                sd_bus_message *reply,
+                void *userdata,
+                sd_bus_error *ret_error) {
+
+        ExecCommand *c = *(ExecCommand**) userdata;
+        int r;
+
+        assert(bus);
+        assert(reply);
+
+        r = sd_bus_message_open_container(reply, 'a', "(sasbttttuii)");
+        if (r < 0)
+                return r;
+
+        LIST_FOREACH(command, c, c) {
+                r = append_exec_command(reply, c);
+                if (r < 0)
+                        return r;
+        }
+
+        return sd_bus_message_close_container(reply);
+}
