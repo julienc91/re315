@@ -1,7 +1,0 @@
-src/core/libsystemd_core_la-load-fragment-gperf-nulstr.lo: \
- src/core/load-fragment-gperf-nulstr.c /usr/include/stdc-predef.h \
- config.h
-
-/usr/include/stdc-predef.h:
-
-config.h:
