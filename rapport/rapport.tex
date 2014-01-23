@@ -122,12 +122,22 @@ Dans un linux chiffré avec dm-crypt (respectant la spécification LUKS), il y a
 
 \subsection{Principe de l'attaque}
 
-Il s'agit d'infecter l'\texttt{initrd} présent sur la partition de boot de la machine pour intercepter le mot de passe.
+Il s'agit d'infecter l'\texttt{initrd} présent sur la partition de boot de la
+machine pour intercepter le mot de passe.
 %Au démarrage de l'ordinateur, celui-ci se lance sur une partition \textit{minimale} ne contenant qu'une image de noyau Linux. Elle contient cependant le nécessaire pour demander à l'utilisateur son mot de passe afin de débloquer la clé de chiffrement et ainsi déchiffrer la partition contenant le reste du système.
 
 
-%L'idée est donc de corrompre la partition de démarrage afin de récupérer le mot de passe entré par l'utilisateur.
-Le seul pré-requis est d'avoir un accès root à la machine cible, que ce soit par un accès physique (via un OS bootable, un boot en single user ou autre astuce) ou non. Notre hypothèse de travail se base sur le principe des attaques dites \textit{evil maid}. Ce nom imagé fait référence aux attaques pour lesquelles l'attaquant peut bénéficier d'un accès matériel à la cible de manière discrète et si possible répétée (d'où la référence à une femme de chambre dans un hôtel). Dans les attaques de type \textit{evil maid}, on considère même une personne ayant des connaissances en informatique potentiellement faible.
+%L'idée est donc de corrompre la partition de démarrage afin de récupérer le
+%mot de passe entré par l'utilisateur.
+Le seul pré-requis est d'avoir un accès root à la machine cible, que ce soit
+par un accès physique (via un OS bootable, un boot en single user ou autre
+astuce) ou non. Notre hypothèse de travail se base sur le principe des attaques
+dites \textit{evil maid}. Ce nom imagé fait référence aux attaques pour
+lesquelles l'attaquant peut bénéficier d'un accès matériel à la cible de
+manière discrète et si possible répétée (d'où la référence à une femme de
+chambre dans un hôtel). Dans les attaques de type \textit{evil maid}, on
+considère même une personne ayant des connaissances en informatique
+potentiellement faible.
 
 L'attaque se divise en deux temps :
 \begin{enumerate}
@@ -135,10 +145,33 @@ L'attaque se divise en deux temps :
     \item Le communiquer à l'attaquant.
 \end{enumerate}
 
-La communication à l'attaquant peut se faire via internet (on supposera qu'un Laptop bénéficie d'un accès régulier à internet), ou par stockage discret localement, puis récupération lors d'un deuxième accès à la machine (potentiellement au moment du vol de données).
+La communication à l'attaquant peut se faire via internet (on supposera qu'un
+Laptop bénéficie d'un accès régulier à internet), ou par stockage discret
+localement, puis récupération lors d'un deuxième accès à la machine
+(potentiellement au moment du vol de données).
 
 \subsection{Implémentation sur Debian}
+\subsubsection*{Méthodologie}
+% grep password
+% Aide d'un site
+% Écriture à la main de l'attaque complète
+% Automatisation de l'infection en shell
 
+\subsubsection*{Réalisation}
+% Retrouver la ligne qui récupère le mot de passe et intercaler écriture dans
+% un fichier au nom un peu planqué.
+% Trouver le moment où le système de fichiers réel est monté avec le déchiffrement
+% à la volée => dans init
+% Passage de RO à RW
+% Utilisation du rc.local pour exécution d'un script arbitraire en root
+% Envoi du mot de passe sur internet
+
+% Infection en full shell : + et - (compromis light/expressif, utilisation de sed)
+% Problématiques de robustesse
+
+% Script d'envoi très basique, pourrait largement être amélioré.
+
+\subsubsection*{Conclusion sur l'attaque}
 
 % Cette attaque permet d'exécuter du code arbitraire en tant que root sur le
 % système dont le disque est chiffré. C'est la porte ouverte à toutes les 
