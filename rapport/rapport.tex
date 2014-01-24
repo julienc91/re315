@@ -566,7 +566,7 @@ L'attaque consiste en la séquence d'actions suivante :
     \centering
     \includegraphics[height=0.3\textheight]{img/pile_tc.png}
     \caption{Vu de l'état de la pile lors de l'appel à \texttt{AskPassword} par
-             le code inséré.}
+             le code inséré (Logger sur le schéma).}
     \label{ask_tweak}
 \end{figure}
 
@@ -578,7 +578,7 @@ avons gardé le même nom (il s'agit du fichier \texttt{logger.asm}).
 Ce code a un fonctionnement très simple : il commence par réempiler l'argument
 \texttt{\&password} (la référence sur la variable \texttt{password}, ce qui
 correspond en assembleur à son adresse) attendu par \texttt{AskPassword}, puis
-appelle cette fonction.  \footnote{Comme expliqué plus haut, l'appel à
+appelle cette fonction \footnote{Comme expliqué plus haut, l'appel à
 \texttt{AskPassword} est patché lors de l'infection, l'adresse pointée par le
 call dans le code est fictive.}. Lorsqu'elle est appelée, \texttt{AskPassword}
 remplira la structure Password avec le bon contenu, et le code interposé n'aura 
@@ -599,7 +599,7 @@ réserve pour stocker le bootloader compressé. Nous allons donc utiliser le der
 secteur\footnote{Un secteur fait généralement 512 octets} réservé pour stocker
 le mot de passe (l'espace libre est bien supérieur à la taille d'un secteur).
 Le bootloader compressé commence au secteur 5 et réserve 57 secteurs (constaté
-dans nos tests), 5 + 57 -1 = 61. Le dernier secteur réservé par TrueCrypt est le
+dans nos tests), $5 + 57 - 1 = 61$. Le dernier secteur réservé par TrueCrypt est le
 numéro 61, d'où le choix de Rutkowska.
 
 Ce nombre n'étant pas nécessairement le même pour toutes les installations (mais
@@ -779,7 +779,11 @@ que depuis la version 2.6, il n'est plus possible de lire librement dans
 /dev/mem. Une première solution consiste à recompiler le noyau en désactivant
 la sécurité empêchant cette action.
 
-%% TODO screenshot make menuconfig
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics[width=15cm]{img/kernel.png}
+  \end{center}
+\end{figure}
 
 La deuxième solution consiste à charger \texttt{fmem}, un module noyau créant
 un nouveau fichier dans /dev permettant d'accéder à l'ensemble de la mémoire
@@ -826,6 +830,52 @@ biométrique.
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
 
+À l'issu de ce projet, nous avons produit trois attaques (dont deux aux
+scénarios analogues) ainsi qu'une clé USB permettant d'exécuter facilement ces
+attaques sur un système réel. Celles-ci restent bien entendu plus des preuves
+de concept que des attaques robustes destinés à fonctionner sur le plus de
+systèmes possibles.  Ceci étant, certaines de ces attaques (et potentiellement
+toutes) ont débouchées sur la possibilité d'infecter le système chiffré
+entièrement (mise en place d'une backdoor ou d'un rootkit). Il s'agit donc
+d'attaques à fort potentiel de nuisance, ce qui n'est pas très étonnant venant
+d'attaques supposant un accès physique.
+
+Dans la plupart des cas, il est très compliqué de se protéger d'une attaque
+avec accès physique à la machine. Protéger le BIOS avec un mot de passe pour
+éviter les boot sur systèmes tiers peut être une solution, mais cela n'est pas
+imparable (retrait de la pile du BIOS pour le réinitialiser). Il faut tout de
+même noter que certaines de ces attaques nécessitent deux accès physiques à la
+machine à des moments différents. Certains logiciel, comme TrueCrypt, ne 
+cherchent d'ailleurs pas à garantir la sécurité en cas d'attaque
+physique\footnote{\og D'après la documentation de TrueCrypt : \textit{If an
+attacker can physically access the computer hardware and you use it after the
+attacker has physically accessed it, then TrueCrypt may become unable to secure
+data on the computer}.\fg}.
+
+Certains logiciels, comme BitLocker cherchent en revanche à pousser la sécurité
+encore plus loin en introduisant des protections matérielles, comme les TPM 
+mentionnés précédemment. D'autres, comme la version de dm-crypt (implémentation
+de LUKS utilisée dans beaucoup de linux) de Kali Linux, optent pour des solutions
+plus radicales : si la personne est forcée de donner le mot de passe, elle peut
+en donner un qui efface le disque en entier. Là dessus, TrueCrypt a une politique
+plus souple, en proposant de booter sur un \og faux \fg système si un certain
+mot de passe est entré.\\
+
+Nous avons vu que chiffrer un disque peut s'avérer utile, mais pas suffisant
+pour assurer la sécurité des données. Un disque ayant été accédé une fois peut
+être compromis. L'utilisation du type d'attaque que nous avons mis en place
+pourrait être utile dans les affaires judiciaires (si ce n'est pas déjà
+utilisé), et éviter les fiasco comme celui du laptop chiffré avec TrueCrypt
+d'un gros bonnet de la drogue au
+Brésil\footnote{http://news.techworld.com/security/3228701/}.
+
+Ce projet nous a apporté beaucoup, notamment techniquement. Il a été l'occasion
+d'amasser beaucoup de culture sur la façon dont se déroule le boot d'une machine,
+du MBR jusqu'au chargement du noyau. Chacun à des endroits différents, que ce
+soit pour la corruption du MBR, de l'initrd des Linux ou pour la mise en place
+d'un Live OS personnalisé, nous avons pu décortiquer certains mécanismes. En
+revanche, nous avons constaté que le fait de monter une attaque robuste est une
+entreprise conséquente, tant les systèmes peuvent être hétérogènes.
 
 
 \end{document}
