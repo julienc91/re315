@@ -10,6 +10,7 @@ TrueCrypt Bootloader Infection
   OS, and the attack is expected to work on Linux systems as well.
 * The LUKS boot partition must `/dev/sda1` and use the `ext4`
   filesystem
+* For the compilation: gcc and nasm.
 
 ## Content of this directory
 
