@@ -430,7 +430,7 @@ C'est la découverte de l'implémentation d'une attaque similaire par Johanna
 Rutkowska\footnote{Plus d'informations sur
 http://theinvisiblethings.blogspot.ch/2009/10/evil-maid-goes-after-truecrypt.html}
 (\textit{Evil Maid Goes After TrueCrypt}) qui a accéléré le processus
-d'écriture de l'attaque. Le résultat est bel est bien notre production et notre
+d'écriture de l'attaque. Le résultat est bel et bien notre production et notre
 vision de l'attaque, mais une grande partie du debug été facilitée par la
 lecture de l'implémentation de Johanna Rutkowska.
 
@@ -617,6 +617,9 @@ La structure contenant le mot de passe est donc tout simplement dumpée sur le
 secteur choisi, et il suffira de lire ce secteur lors d'un accès ultérieur au
 disque dur pour récupérer le mot de passe. L'hypothèse d'un deuxième accès au
 disque dur machine est plus que raisonnable, puisque le but de
+%% FIXME terminer cette putain de phrase !!
+
+
 
 \paragraph{Autre méthode}~
 
@@ -638,7 +641,7 @@ directrice de Rutkowska, mais cela aurait été intéressant à réaliser.
 
 \paragraph{Derniers détails} ~
 
-Après avoir réalisé toute ce processus d'infection, il ne faudra pas oublier de :
+Après avoir réalisé tout ce processus d'infection, il ne faudra pas oublier de :
 \begin{itemize}
     \item Recompresser le bootloader avec les bonnes options (pour que le
     Decompressor le décompresse correctement lors du boot). Ces options sont
