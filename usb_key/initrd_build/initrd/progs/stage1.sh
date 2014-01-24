@@ -10,8 +10,3 @@ DEV=`dmesg | grep "Attached SCSI removable disk" |head -1|sed -e 's/.*\[//' -e '
 export BASE=/mnt/stick
 echo Mount command: mount -r -t vfat "/dev/$DEV"1 $BASE
 mount -r -t vfat "/dev/$DEV"1 $BASE
-if ! [ -f $BASE/stage2 ] ; then 
-	echo Mounting the USB stick failed, report the bug...
-else
-	$BASE/stage2 
-fi

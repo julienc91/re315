@@ -9,10 +9,10 @@ if [ "$a1" == "0x" ]; then
 fi
 
 echo -n "Module: insmod fmem.ko a1=$a1 : ";
-insmod fmem.ko a1="$a1" || exit;
+insmod /lib/modules/fmem.ko a1="$a1" || exit;
 echo "OK";
-echo -n "Device: "; sleep 1;ls /dev/fmem
-echo "----Memory areas: -----"
-cat /proc/mtrr;
-echo "-----------------------"
-echo "!!! Don't forget add \"count=\" to dd !!!";
+#echo -n "Device: "; sleep 1;ls /dev/fmem
+#echo "----Memory areas: -----"
+#cat /proc/mtrr;
+#echo "-----------------------"
+#echo "!!! Don't forget add \"count=\" to dd !!!";

@@ -1,6 +1,6 @@
 KEYBOARDTYPE="pc"
-KEYTABLE="us"
-LAYOUT="us"
+KEYTABLE="fr-latin1"
+LAYOUT="fr"
 MODEL="pc105+inet"
 OPTIONS=""
 VARIANT=""
