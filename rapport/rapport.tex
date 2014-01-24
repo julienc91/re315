@@ -830,11 +830,11 @@ biométrique.
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
 
-À l'issu de ce projet, nous avons produit trois attaques (dont deux aux
-scénarios analogues) ainsi qu'une clé USB permettant d'exécuter facilement ces
-attaques sur un système réel. Celles-ci restent bien entendu plus des preuves
+À l'issue de ce projet, nous avons produit trois attaques (dont deux aux
+scénarios analogues) ainsi qu'une clé USB permettant les exécuter facilement
+sur un système réel. Celles-ci restent bien entendu plus des preuves
 de concept que des attaques robustes destinés à fonctionner sur le plus de
-systèmes possibles.  Ceci étant, certaines de ces attaques (et potentiellement
+systèmes possibles. Ceci étant, certaines de ces attaques (et potentiellement
 toutes) ont débouchées sur la possibilité d'infecter le système chiffré
 entièrement (mise en place d'une backdoor ou d'un rootkit). Il s'agit donc
 d'attaques à fort potentiel de nuisance, ce qui n'est pas très étonnant venant
@@ -845,7 +845,7 @@ avec accès physique à la machine. Protéger le BIOS avec un mot de passe pour
 éviter les boot sur systèmes tiers peut être une solution, mais cela n'est pas
 imparable (retrait de la pile du BIOS pour le réinitialiser). Il faut tout de
 même noter que certaines de ces attaques nécessitent deux accès physiques à la
-machine à des moments différents. Certains logiciel, comme TrueCrypt, ne 
+machine à des moments différents. Certains logiciels, comme TrueCrypt, ne 
 cherchent d'ailleurs pas à garantir la sécurité en cas d'attaque
 physique\footnote{\og D'après la documentation de TrueCrypt : \textit{If an
 attacker can physically access the computer hardware and you use it after the
@@ -854,10 +854,10 @@ data on the computer}.\fg}.
 
 Certains logiciels, comme BitLocker cherchent en revanche à pousser la sécurité
 encore plus loin en introduisant des protections matérielles, comme les TPM 
-mentionnés précédemment. D'autres, comme la version de dm-crypt (implémentation
+mentionnés précédemment. D'autres, comme la version de \texttt{dm-crypt} (implémentation
 de LUKS utilisée dans beaucoup de Linux) de Kali Linux, optent pour des solutions
-plus radicales : si la personne est forcée de donner le mot de passe, elle peut
-en donner un qui efface le disque en entier. Là dessus, TrueCrypt a une politique
+plus radicales: si la personne est forcée de donner le mot de passe, elle peut
+en donner un qui effacera intégralement le disque dur. Là dessus, TrueCrypt a une politique
 plus souple, en proposant de booter sur un \og faux \fg système si un certain
 mot de passe est entré.\\
 
@@ -872,7 +872,7 @@ Brésil\footnote{http://news.techworld.com/security/3228701/}.
 Ce projet nous a apporté beaucoup, notamment techniquement. Il a été l'occasion
 d'amasser beaucoup de culture sur la façon dont se déroule le boot d'une machine,
 du MBR jusqu'au chargement du noyau. Chacun à des endroits différents, que ce
-soit pour la corruption du MBR, de l'initrd des Linux ou pour la mise en place
+soit pour la corruption du MBR, de l'\texttt{initrd} des Linux ou pour la mise en place
 d'un Live OS personnalisé, nous avons pu décortiquer certains mécanismes. En
 revanche, nous avons constaté que le fait de monter une attaque robuste est une
 entreprise conséquente, tant les systèmes peuvent être hétérogènes.
