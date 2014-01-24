@@ -8,8 +8,10 @@ syslinuxPath="conf/syslinux.cfg"
 kernelPath="kernel_image/vmlinuz.img"
 
 echo -n "Building initrd ..."
-initrd_build/compressImg.sh
+cd initrd_build/
+./compressImg.sh
 echo "Done"
+cd ..
 
 echo "Generating $outputName"
 genisoimage -o $outputName $initrdPath $syslinuxPath $kernelPath
