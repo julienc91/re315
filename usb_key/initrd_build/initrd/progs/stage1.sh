@@ -1,7 +1,8 @@
 #!/bin/bash
 while ! dmesg | grep -q "Attached SCSI removable disk" ; do
 	echo  "Waiting for the USB stick to init..."
-	sleep 1
+    dmesg
+    sleep 1
 done  
 sleep 1
 dmesg | grep  "Attached SCSI removable disk"

@@ -785,7 +785,14 @@ que depuis la version 2.6, il n'est plus possible de lire librement dans
 /dev/mem. Une première solution consiste à recompiler le noyau en désactivant
 la sécurité empêchant cette action.
 
-%% TODO screenshot make menuconfig
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=15cm]{img/kernel.png}
+	\end{center}
+\end{figure}
+
+
 
 La deuxième solution consiste à charger \texttt{fmem}, un module noyau créant
 un nouveau fichier dans /dev permettant d'accéder à l'ensemble de la mémoire
