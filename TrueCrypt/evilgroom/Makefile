@@ -13,3 +13,6 @@ emul:
 
 clean:
 	rm -f logger.o evilgroom.o
+
+mrproper: clean
+	rm -f evilgroom

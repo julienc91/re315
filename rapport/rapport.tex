@@ -152,30 +152,117 @@ localement, puis récupération lors d'un deuxième accès à la machine
 
 \subsection{Implémentation sur Debian}
 \subsubsection*{Méthodologie}
-% grep password
 % Aide d'un site
 % Écriture à la main de l'attaque complète
 % Automatisation de l'infection en shell
 
+Nous avons réalisé et testé l'attaque sur Debian Wheezy uniquement, l'attaque
+fonctionne certainement sur d'autres versions, mais nous avons préféré nous
+concentrer sur l'élaboration d'attaques contre d'autres technologies une fois
+celle-ci en place pour un système, l'intérêt étant d'établir des preuves de 
+concept et non des attaques efficaces contre le plus de systèmes et de versions
+possibles en pratique.
+
+Pour réaliser cette attaque, nous avons procédé en trois temps :
+\begin{enumerate}
+    \item D'abord de la documentation sur le fonctionnement général de LUKS et
+    des attaques existantes. Cette phase de documentation et de recherche a
+    impliqué à la fois des recherches documentaires\footnote{notamment le site
+    http://www.wzdftpd.net/blog/index.php?post/2009/10/28/44-implementing-the-evil-maid-attack-on-linux-with-luks},
+    et des recherches dans les scripts de l'initrd avec entre autres
+    \texttt{grep} et \texttt{find} pour identifier les fichiers intéressants.
+    Il a ensuite fallu lire et comprendre ces scripts.
+    \item Puis la réalisation de l'attaque \og à la main \fg, c'est-à-dire la 
+    construction d'un initrd malicieux à partir de l'initrd présent dans la
+    partition \texttt{/boot} d'un Debian.
+    \item Enfin l'automatisation de l'attaque, réalisée en shell pur, pour 
+    l'exercice d'une part, et pour pouvoir tourner sur un Unix bootable minimal
+    d'autre part. Le C aurait pu être utilisé, mais la puissance des commandes
+    Unix a été préférée. Les langages de type python ont été exclus à cause du
+    critère de minimalité du système à partir duquel l'attaque sera réalisée.
+\end{enumerate}
+
+
 \subsubsection*{Réalisation}
-% Retrouver la ligne qui récupère le mot de passe et intercaler écriture dans
-% un fichier au nom un peu planqué.
-% Trouver le moment où le système de fichiers réel est monté avec le déchiffrement
-% à la volée => dans init
-% Passage de RO à RW
-% Utilisation du rc.local pour exécution d'un script arbitraire en root
-% Envoi du mot de passe sur internet
+Les concepts de la réalisation de cette attaque sont très simples, sa réalisation
+en shell a été, quant à elle, plus délicate. Nous ne détaillerons pas réellement
+l'écriture du code, puisqu'il est disponible dans les sources du projet.
 
-% Infection en full shell : + et - (compromis light/expressif, utilisation de sed)
-% Problématiques de robustesse
+L'objectif de l'infection est ici d'intercepter le mot de passe et de le faire
+remonter jusqu'au système Linux (qui est protégé par le chiffrement) pour qu'il
+puisse être \textit{leaké} via internet.
 
-% Script d'envoi très basique, pourrait largement être amélioré.
+Les étapes de l'infection sont les suivantes :
+\begin{enumerate}
+    \item Trouver toutes les partitions bootables.
+    \item Essayer de les infecter. Si la partition ne correspond pas à un /boot,
+    l'infection retournera un code d'erreur et il suffira de tenter l'infection
+    sur la partition suivante : soit la partition n'est pas de la forme cherchée,
+    soit le script n'est pas capable de l'infecter correctement.
+    \item Monter la partition, trouver et décompresser le ou les initrd. Le
+    script essaiera d'infecter chacun d'entre eux.
+    \item Trouver le script \texttt{cryptroot} (probablement dans
+    \texttt{/scripts/local-top}), trouver et modifier la partie qui demande le
+    mot de passe et le passe au programme mettant en place le déchiffrement à la
+    volée, puis la changer pour écrire le mot de passe à un endroit du système
+    de ficher temporaire du initrd. Pour cet exemple, nous avons choisi le path
+    \texttt{/dev/.cryptpass}, car \texttt{/dev} est concervé lors du montage
+    du vrai système de fichiers, cela a donc facilité le développement et le
+    debug du programme.
+    \item Mofifier le script \texttt{init} pour qu'il monte la partition du
+    système en \textit{read-write} et non en \textit{read-only}.
+    \item Modifier le script \texttt{init} pour qu'il :
+    \begin{itemize}
+        \item Lise le mot de passe là où il a été stocké.
+        \item Supprime le fichier qui contenait le mot de passe (pour plus de 
+        discrétion).
+        \item Insère à la fin du rc.local du système un script qui envoie le mot
+        de passe sur internet et se supprime du rc.local une fois que c'est fait.
+        Le détail et la critique de la manière d'envoyer sur internet sera faite
+        plus loin.
+    \end{itemize}
+    \item Recompresser l'initrd et le remettre au bon endroit avec le bon nom.
+\end{enumerate}
+
+À la fin de cette infection, à chaque boot du Debian, le mot de passe sera
+récupéré et envoyé sur internet.
+
+L'envoi sur internet consiste en une simple requête GET sur une URL que nous
+avons mis en place, qui permet de mémoriser un argument de la requête. C'est une
+version simpliste, nous aurions pu envisager le post sur un compte twitter ou
+utiliser un autre type de serveur permettant de récupérer de l'information de
+manière anonyme. Nous n'avons pas cherché à mettre l'accent sur la solidité de
+la méthode d'envoi sur le net, le tout était de démontrer que cela était
+facilement possible.
+
+Nous avons utilisé netcat pour l'envoi de la requête, l'idéal aurait peut-être
+été de tester la présence d'un certain nombre d'utilitaires sur la machine et
+choisir l'un d'entre eux (netcat, telnet...), ou d'embarquer notre propre
+utilitaire.
 
 \subsubsection*{Conclusion sur l'attaque}
 
-% Cette attaque permet d'exécuter du code arbitraire en tant que root sur le
-% système dont le disque est chiffré. C'est la porte ouverte à toutes les 
-% fenêtres... (Rootkit, fuites d'infos si connexion au web, etc...)
+En réalisant cette attaque, nous avons pu voir à quelle point il pouvait être
+facile de compromettre un système, même chiffré en ayant juste un accès physique
+ou root à la machine (un accès root est suffisant pour réaliser cette attaque).
+Sur les systèmes chiffrés avec LUKS, il est même relativement facile de récupérer
+la clé de chiffrement elle-même, puisqu'il s'agit simplement d'exécuter une
+commande, fournir le mot de passe actuel (qui est en notre possession). Il 
+suffit de parser la sortie de cette commande pour récupérer la clé. Nous ne 
+l'avons pas fait pour passer plus de temps sur d'autres sujets, mais le réaliser
+serait encore une fois peu difficile en théorie (et en pratique).
+
+En revanche, les limites de cette attaque, comme de toute attaque sont des
+possibles problèmes de robustesse aux changements de noms de variable, de forme
+de code. Ces problèmes sont presques inévitables, mais rendent l'infection
+fragile.
+
+Il est bon de noter que cette attaque remonte jusqu'au système et permet
+d'exécuter du code arbitraire en root sur la machine (via rc.local pour notre 
+cas, mais tout est accessible), et d'avoir accès à l'intégralité du système de
+fichiers en clair. Il est donc possible d'introduire n'importe quelle backdoor,
+rootkit, keylogger dans le système, et même de sortir des données du système sans
+avoir un nouvel accès physique.
 
 \subsection{Implémentation sur Fedora}
 
@@ -216,7 +303,7 @@ Le problème majeur est le fait que nous n'ayons pas trouvé précisément quels
 Avec un peu plus de temps, ces problèmes auraient été résolus, mais plutôt que de perdre du temps à tenter de réaliser la même attaque que précédemment, nous avons fais le choix d'essayer une autre méthode.
 
 
-\clearpage
+%\clearpage
 \section{TrueCrypt, la solution gratuite et portable}
 
 \subsection{Présentation}
@@ -377,7 +464,7 @@ Les étapes sont les suivantes :
     mot de passe : c'est donc ici que nous allons agir pour l'intercepter.
 \end{enumerate}
 
-\begin{figure}
+\begin{figure}[H]
     \centering
     \includegraphics[height=0.5\textheight]{img/tc_boot.png}
     \caption{Séquence de boot (simplifiée) de TrueCrypt}
@@ -596,14 +683,14 @@ un temps suffisant pour examiner le cas BitLocker, on pourrait construire une
 attaque similaire.
 
 
-\clearpage
+%\clearpage
 \section{BitLocker pour Windows}
 
 \subsection{Présentation}
 
 
 
-\clearpage
+%\clearpage
 \section{Les autres solutions}
 
 \subsection{Cold Boot Attack}
@@ -654,8 +741,11 @@ Il est peut-être donc temps désormais de passer à un autre type d'authentific
 
 
 
-\clearpage
+%\clearpage
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
+
+\section*{Bibliographe}
+% TODO BIBLIOGRAPHIE
 
 \end{document}
