@@ -2,16 +2,14 @@
 
 mount -t proc /proc /proc
 setquiet
-# echo Mounting proc filesystem
-# echo Mounting sysfs filesystem
 mount -t sysfs /sys /sys
-# echo Creating /dev
+#echo Creating /dev
 mount -o mode=0755 -t tmpfs /dev /dev
 mkdir /dev/pts
 mount -t devpts -o gid=5,mode=620 /dev/pts /dev/pts
 mkdir /dev/shm
 mkdir /dev/mapper
-# echo Creating initial device nodes
+#echo Creating initial device nodes
 mknod /dev/null c 1 3
 exec &>/dev/null
 mknod /dev/zero c 1 5
@@ -38,21 +36,22 @@ mknod /dev/ttyS1 c 4 65
 mknod /dev/ttyS2 c 4 66
 mknod /dev/ttyS3 c 4 67
 /lib/udev/console_init tty0
-#daemonize --ignore-missing /bin/plymouthd
-#plymouth --show-splash
 # echo Setting up hotplug.
 hotplug
+/usr/bin/run.sh
 # echo Creating block device nodes.
 mkblkdevs
 # echo Creating character device nodes.
 mkchardevs
-insmod /lib/modules/2.6.27.5-117.fc10.i686/usb-storage.ko
-insmod /lib/modules/2.6.27.5-117.fc10.i686/fat.ko
-insmod /lib/modules/2.6.27.5-117.fc10.i686/vfat.ko
+insmod /lib/modules/msdos.ko
+#insmod /lib/modules/usb-storage.ko
+#insmod /lib/modules/fat.ko
+#insmod /lib/modules/vfat.ko
 # echo Making device-mapper control node
 mkdmnod
 mkblkdevs
 exec /dev/tty 2>&1
 /progs/stage1.sh
-/bin/sleep 100000
+#/bin/sleep 100000
+/usr/bin/menu.sh
 
