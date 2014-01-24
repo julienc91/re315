@@ -730,16 +730,49 @@ Il serait donc parfaitement envisageable d'ôter la RAM d'un ordinateur venant d
 \subsection{Dump de la RAM}
 
 Sur le principe de base de la \textit{Cold Boot Attack}, en supposant un accès root à la machine cible, il est possible de réaliser une copie exacte de la mémoire vive.
-%TODO
+Pour réaliser le dump de la ram sans retirer physiquement la RAM de ses slots, nous réalisons une copie via une clef USB.
 
-Mais là encore, il reste la difficile étape de retrouver la clé de chiffrement parmi l'énorme quantité de données récupérée.
+Une première contrainte est que le fait de charger un OS pour réaliser un dump de la mémoire écrase 
+inévitablement une partie des données présentes en RAM. Cet OS se doit donc d'être le plus petit 
+possible. 
+Une autre contrainte est que depuis la version 2.6, il n'est plus possible de lire librement dans 
+/dev/mem. Une première solution consiste à recompiler le noyau en désactivant la sécurité 
+empêchant cette action.
+
+%% TODO screenshot make menuconfig
+
+La deuxième solution consiste à charger \texttt{fmem}, un module noyau créant un nouveau fichier 
+dans /dev permettant d'accéder à l'ensemble de la mémoire sans aucune limite. Cette solution a pour avantage qu'elle ne nécessite pas la recompilation du noyau.
+
+\begin{lstlisting}[language=Bash]
+dd if=/dev/fmem of=/mnt/dump bs=1MB count=4096
+\end{lstlisting}
+
+Mais là encore, il reste la difficile étape de retrouver la clé de chiffrement 
+parmi l'énorme quantité de données récupérée.
+
+
+\subsection{Analyse et récupération de la clef de chiffrement via Volatility}
+D'après l'ouvrage \texttt{RAM is key}\footnote{http://cryptome.org/0003/RAMisKey.pdf}
+le mot de passe se trouve dans l'espace mémoire correspondant au driver de TrueCrypt.
+De plus une recherche avec le format [1 byte size][3 null bytes][passphrase][1 null byte]
+permet de localiser le mot de passe au sein de l'espace mémoire du driver.
 
 
 \subsection{La solution de l'acharnement: le brute-force}
 
-Dans le cas où l'attaquant a les ressources en temps et en matériel et que celui-ci souhaite ardemment récupérer le contenu chiffré, il est toujours envisageable de déployer une attaque par force brute. Le problème intrinsèque au mot de passe est qu'il doit à la fois être suffisamment complexe pour qu'il ne puisse pas être trouvé aisément, tout en étant suffisamment \textit{simple} pour que l'utilisateur puisse s'en souvenir pour le saisir sans avoir à le noter à côté de son poste. Même si, par des moyens mnémotechniques, on peut envisager l'utilisation de mots de passe d'une vingtaine de caractères, il est certain que les avancées technologiques finiront tôt ou tard par permettre la récupération de mots de passe de cette taille de manière relativement rapide.
+Dans le cas où l'attaquant a les ressources en temps et en matériel et que celui-ci souhaite 
+ardemment récupérer le contenu chiffré, il est toujours envisageable de déployer une attaque 
+par force brute. Le problème intrinsèque au mot de passe est qu'il doit à la fois être 
+suffisamment complexe pour qu'il ne puisse pas être trouvé aisément, tout en étant suffisamment 
+\textit{simple} pour que l'utilisateur puisse s'en souvenir pour le saisir sans avoir à le noter
+à côté de son poste. Même si, par des moyens mémotechniques, on peut envisager l'utilisation de mots
+de passe d'une vingtaine de caractères, il est certain que les avancées technologiques finiront tôt 
+ou tard par permettre la récupération de mots de passe de cette taille de manière relativement 
+rapide.
 
-Il est peut-être donc temps désormais de passer à un autre type d'authentification, plus complexe à outrepasser, telle que l'authentification biométrique.
+Il est peut-être donc temps désormais de passer à un autre type d'authentification, 
+plus complexe à outrepasser, telle que l'authentification biométrique.
 
 
 
