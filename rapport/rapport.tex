@@ -201,10 +201,10 @@ Les étapes de l'infection sont les suivantes :
     mot de passe et le passe au programme mettant en place le déchiffrement à la
     volée, puis la changer pour écrire le mot de passe à un endroit du système
     de ficher temporaire du initrd. Pour cet exemple, nous avons choisi le path
-    \texttt{/dev/.cryptpass}, car \texttt{/dev} est concervé lors du montage
+    \texttt{/dev/.cryptpass}, car \texttt{/dev} est conservé lors du montage
     du vrai système de fichiers, cela a donc facilité le développement et le
     debug du programme.
-    \item Mofifier le script \texttt{init} pour qu'il monte la partition du
+    \item Modifier le script \texttt{init} pour qu'il monte la partition du
     système en \textit{read-write} et non en \textit{read-only}.
     \item Modifier le script \texttt{init} pour qu'il :
     \begin{itemize}
@@ -249,7 +249,7 @@ serait encore une fois peu difficile en théorie (et en pratique).
 
 En revanche, les limites de cette attaque, comme de toute attaque sont des
 possibles problèmes de robustesse aux changements de noms de variable, de forme
-de code. Ces problèmes sont presques inévitables, mais rendent l'infection
+de code. Ces problèmes sont presque inévitables, mais rendent l'infection
 fragile.
 
 Il est bon de noter que cette attaque remonte jusqu'au système et permet
@@ -451,7 +451,7 @@ Les étapes sont les suivantes :
     TrueCrypt.
     \item Si l'étape précédente est réussie, alors le bootloader fraîchement
     décompressé est exécuté. Ceci est réalisé via l'empilement du registre de
-    segment \texttt{es}\footnote{en assembleur intel 16bits, le registre
+    segment \texttt{es}\footnote{en assembleur Intel 16bits, le registre
     \texttt{es} est utilisé conjointement à d'autres registres pour simuler un
     adressage sur 20 bits (\texttt{es << 4 + reg}).} (valant 0 ici) et de
     l'adresse du code dans le segment, en l'occurrence \texttt{0x100} puis
@@ -547,7 +547,7 @@ L'attaque consiste en la séquence d'actions suivante :
     dans le code binaire au moment de l'infection grâce à la recherche d'une
     chaîne binaire l'identifiant de manière unique (une seule occurrence dans
     le fichier). On aurait pu directement donner l'offset de l'appel, mais on
-    considèrera qu'un fichier issu de code C compilé est plus prone à varier
+    considérera qu'un fichier issu de code C compilé est plus prône à varier
     que le programme en assembleur du bootloader (où des offsets avaient été
     utilisés). Ceci étant, les deux méthodes ont leurs défauts.
     \item Une fois l'appel retrouvé, on a toutes les informations : l'offset de
@@ -590,7 +590,7 @@ Alors où le stocker ?
 
 La réponse que Rutkowska a apporté à la question est simple : sur le disque.
 Dans son code, elle utilise l'interruption 0x13 pour les I/O disque pour écrire
-dans le secteur 61 (en les numérottant depuis 0).
+dans le secteur 61 (en les numérotant depuis 0).
 
 Surpris par ce chiffre, nous avons décidé de chercher un endroit où nous aurions
 une garantie que les données ne seraient pas écrasées. Le lecteur attentif se
@@ -721,7 +721,7 @@ situation, la mise en place d'un phishing récupérant le mot de passe de
 l'utilisateur et réalisant une copie intégrale de sa clé usb aurait a priori
 permis de se ramener au cas du phishing réalisé pour TrueCrypt. Si aucun code
 exécuté n'est présent sur la clé, il doit également être possible de corrompre
-le code intéragissant avec la clé pour leaker des informations critiques
+le code interagissant avec la clé pour leaker des informations critiques
 concernant le chiffrement (clé de chiffrement, ou clé chiffrée par le mot de
 passe et mot de passe).
 
@@ -773,7 +773,7 @@ gigaoctets de données\dots
 
 Sur le principe de base de la \textit{Cold Boot Attack}, en supposant un accès
 root à la machine cible, il est possible de réaliser une copie exacte de la
-mémoire vive. Pour réaliser le dump de la ram sans retirer physiquement la RAM
+mémoire vive. Pour réaliser le dump de la RAM sans retirer physiquement la RAM
 de ses slots, nous comptons sur la préservation de son contenu dans le cas d'un
 reboot hardware de la machine, après quoi nous réalisons une copie du contenu
 de la RAM via une live USB à l'emprunte en RAM la plus petite possible.
@@ -823,7 +823,7 @@ envisageable de déployer une attaque par force brute. Le problème intrinsèque
 au mot de passe est qu'il doit à la fois être suffisamment complexe pour qu'il
 ne puisse pas être trouvé aisément, tout en étant suffisamment \textit{simple}
 pour que l'utilisateur puisse s'en souvenir pour le saisir sans avoir à le
-noter à côté de son poste. Même si, par des moyens mémotechniques, on peut
+noter à côté de son poste. Même si, par des moyens mnémotechniques, on peut
 envisager l'utilisation de mots de passe d'une vingtaine de caractères, il est
 certain que les avancées technologiques finiront tôt ou tard par permettre la
 récupération de mots de passe de cette taille de manière relativement rapide.
