@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Repacks a folder in the initrd file format (cpio gzip archive)
+
 if [ $# -ne 2 ]; then
 	echo "Usage: $0 source_folder destination_image"
 	exit 1

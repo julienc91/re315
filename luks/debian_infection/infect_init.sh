@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Infects the init file of the initrd, so that it mounts the system in
+# read and write mode rather than read only.
 
 if [ $# -lt 1 ]; then
 	echo "Usage: $0 init_to_corrupt"
@@ -8,9 +10,6 @@ fi
 
 init=$1
 payload_file="init_payload.sh"
-
-# Contains find_var_name
-# . ./infect_functions.sh
 
 # Add the "no readonly"
 if ! sed -i 'N;/readonly=.*;;/,/done/s/\(\s*done.*\)$/\1\nreadonly=n/;' $init

@@ -3,7 +3,8 @@ LUKS infection under Fedora
 
 ## Requirements
 
-- A root access on the targeted device, and a USB key to boot on
+- A physical access on the targeted device and an USB key to boot on as root (or
+  a root access on any Unix system available on the device).
 - The targeted device must use LUKS and a Fedora-like operating system
 - The LUKS boot partition must `/dev/sda1` and use the `ext4`
   filesystem
