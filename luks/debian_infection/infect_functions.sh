@@ -1,6 +1,7 @@
 #!/bin/sh
 
 # $1 is the file, $2 is a space separated list of possible values
+# writes the name of an existing var among the provided ones
 find_var_name() { 
     file=$1
     values=$2
@@ -14,6 +15,8 @@ find_var_name() {
     done
 }
 
+# Find one files in the candidates that is of the specified type.
+# $1: filename, $2: type (shell...), $3 directory where to look recursively
 find_file_by_type() {
     fname=$1
     type=$2

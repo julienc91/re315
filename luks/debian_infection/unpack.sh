@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Unpacks an initrd (cpio gzip file) to a directory.
+
 if [ $# -ne 2 ]; then
 	echo "Usage: $0 initrd_image destination folder"
 	exit 1
