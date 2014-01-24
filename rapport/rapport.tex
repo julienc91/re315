@@ -21,7 +21,7 @@
 \pagestyle{fancy}
 
 
-\author{J. \textsc{Chaumont} \and P. \textsc{Gourrinchas} \and \textsc{A. Hanriat} \and \textsc{F. Monjalet}}
+\author{J. \textsc{Chaumont} \and P. \textsc{Gourinchas} \and \textsc{A. Hanriat} \and \textsc{F. Monjalet}}
 \title{RE315- Sécurité des Réseaux\\Laptop}
 
 \fancyhead[L]{Sécurité des Réseaux}
@@ -103,11 +103,6 @@ Le système est relativement simple. L'utilisateur est seul possesseur d'un mot 
 
 \begin{figure}[H]
 	\centering
-        % FIXME, ce schéma est un peu faux, LUKS ne déchiffre pas la
-        % partition, il la monte de telle manière que lorsqu'elle est accédée,
-        % les données sont déchiffrées à la volée.
-        
-        % ANSWER modifié
 	\includegraphics[width=400px]{img/luks_principe.png}
 	\caption{Principe de fonctionnement simplifié de LUKS}
 \end{figure}
@@ -688,7 +683,13 @@ attaque similaire.
 %\clearpage
 \section{BitLocker pour Windows}
 
-\subsection{Présentation}
+BitLocker est un composant de chiffrement de disque dur mis au point par Microsoft et inclus sur les systèmes Windows depuis Vista. Son utilisation est néanmoins plutôt limitée, puisque BitLocker n'est présent que sur les éditions Entreprise et Intégrale de Windows Vista, 7 et 2008, et Professionnelle et Entreprise pour Windows 8.
+
+Parmi les trois modes de chiffrement proposés par BitLocker, deux d'entre eux reposent sur un composant matériel, le TPM\footnote{Trusted Platform Module, norme ISO/IEC 11889-1:2009}, dans lequel la clé de chiffrement est stockée de manière sécurisée. L'atout majeur du TPM en matière de sécurité est qu'il se lance au démarrage de la machine, avant le BIOS, ce qui limite les attaques de type phishing. En effet, par l'intermédiaire du TPM, BitLocker est en mesure de détecter les modifications dans la séquence de démarrage ainsi que dans les fichiers sur lesquels l'ordinateur démarre. Un article daté de 2009\footnote{\textit{Attacking the BitLocker Boot Process}, 2009:\\\url{http://testlab.sit.fraunhofer.de/downloads/Publications/Attacking_the_BitLocker_Boot_Process_Trust2009.pdf}} propose néanmoins des pistes pour outrepasser BitLocker malgré l'utilisation d'un TPM. En outre, en 2010, une méthode permettant de compromettre un module TPM a été présentée lors de la conférence Black Hat DC\footnote{\url{http://blogs.windows.com/windows/b/windowssecurity/archive/2010/02/10/black-hat-tpm-hack-and-bitlocker.aspx}}. Il semblerait cependant que cette dernière attaque soit très difficile à réaliser, puisqu'elle requiert des équipements très particuliers ainsi que d'excellentes connaissances en électronique.
+
+BitLocker peut également être utilisé sans TPM, même si l'option est désactivée par défaut et que son activation pourrait être assimilée à une chasse au trésor dans les méandres du gestionnaire de politiques de sécurité. Dans cette situation, BitLocker requiert l'insertion d'une clé USB dans laquelle il inscrit le mot de passe permettant de déchiffrer le disque dur. Un mot de passe entré par l'utilisateur peut être utilisé en complément.
+
+Par manque de temps, et également à cause de quelques difficultés rencontrées liées à la virtualisation de notre système Windows de test, nous n'avons pas implémenté d'attaque contre BitLocker sans TPM. Néanmoins, dans cette situation, la mise en place d'un phishing récupérant le mot de passe de l'utilisateur et réalisant une copie intégrale de sa clé usb aurait a priori permis de se ramener au cas du phishing réalisé pour TrueCrypt.
 
 
 
@@ -720,7 +721,7 @@ Quelle que soit la solution logicielle utilisée, la clé de déchiffrement d'un
 	\cline{2-4} & 80 & 50 & 0.18\\
 	\hline
 	\end{tabular}
-	\caption{Comparaison de l'efficacité de la \textit{Cold Boot Attack},\textit{Lest We Remember: Cold Boot Attacks on Encryption Keys}, 2008}
+	\caption{Comparaison de l'efficacité de la \textit{Cold Boot Attack},\\\textit{Lest We Remember: Cold Boot Attacks on Encryption Keys}, 2008}
 \end{figure}
 
 Il serait donc parfaitement envisageable d'ôter la RAM d'un ordinateur venant de s'éteindre, de la refroidir rapidement et d'en récupérer le contenu. Il ne resterait plus ensuite qu'à retrouver la clé de chiffrement parmi les gigaoctets de données\dots
