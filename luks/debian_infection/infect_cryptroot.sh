@@ -38,7 +38,7 @@ insertionLine=$((interestIfLine - 1))
 # Change the if condition so that the password just echoed and piped to the 
 # program that sets up the on-the-fly decryption rather than from the
 # program that asks for the password.
-sed -i "$insertionLine,/^\s*fi\s*$/s/\$$cryptkeyscript\s\s*\"\$$cryptkey\"/echo -n \"\$password/\"" $cryptroot
+sed -i "$insertionLine,/^\s*fi\s*$/s/\$$cryptkeyscript\s\s*\"\$$cryptkey\"/echo -n \"\$password\"/" $cryptroot
 
 # Code to be inserted : gets the password and stores it into /dev/.cryptpass
 sed -i "$insertionLine a\
