@@ -683,14 +683,47 @@ attaque similaire.
 %\clearpage
 \section{BitLocker pour Windows}
 
-BitLocker est un composant de chiffrement de disque dur mis au point par Microsoft et inclus sur les systèmes Windows depuis Vista. Son utilisation est néanmoins plutôt limitée, puisque BitLocker n'est présent que sur les éditions Entreprise et Intégrale de Windows Vista, 7 et 2008, et Professionnelle et Entreprise pour Windows 8.
+BitLocker est un composant de chiffrement de disque dur mis au point par
+Microsoft et inclus sur les systèmes Windows depuis Vista. Son utilisation est
+néanmoins plutôt limitée, puisque BitLocker n'est présent que sur les éditions
+Entreprise et Intégrale de Windows Vista, 7 et 2008, et Professionnelle et
+Entreprise pour Windows 8.
 
-Parmi les trois modes de chiffrement proposés par BitLocker, deux d'entre eux reposent sur un composant matériel, le TPM\footnote{Trusted Platform Module, norme ISO/IEC 11889-1:2009}, dans lequel la clé de chiffrement est stockée de manière sécurisée. L'atout majeur du TPM en matière de sécurité est qu'il se lance au démarrage de la machine, avant le BIOS, ce qui limite les attaques de type phishing. En effet, par l'intermédiaire du TPM, BitLocker est en mesure de détecter les modifications dans la séquence de démarrage ainsi que dans les fichiers sur lesquels l'ordinateur démarre. Un article daté de 2009\footnote{\textit{Attacking the BitLocker Boot Process}, 2009:\\\url{http://testlab.sit.fraunhofer.de/downloads/Publications/Attacking_the_BitLocker_Boot_Process_Trust2009.pdf}} propose néanmoins des pistes pour outrepasser BitLocker malgré l'utilisation d'un TPM. En outre, en 2010, une méthode permettant de compromettre un module TPM a été présentée lors de la conférence Black Hat DC\footnote{\url{http://blogs.windows.com/windows/b/windowssecurity/archive/2010/02/10/black-hat-tpm-hack-and-bitlocker.aspx}}. Il semblerait cependant que cette dernière attaque soit très difficile à réaliser, puisqu'elle requiert des équipements très particuliers ainsi que d'excellentes connaissances en électronique.
+Parmi les trois modes de chiffrement proposés par BitLocker, deux d'entre eux
+reposent sur un composant matériel, le TPM\footnote{Trusted Platform Module,
+norme ISO/IEC 11889-1:2009}, dans lequel la clé de chiffrement est stockée de
+manière sécurisée. L'atout majeur du TPM en matière de sécurité est qu'il se
+lance au démarrage de la machine, avant le BIOS, ce qui limite les attaques de
+type phishing. En effet, par l'intermédiaire du TPM, BitLocker est en mesure de
+détecter les modifications dans la séquence de démarrage ainsi que dans les
+fichiers sur lesquels l'ordinateur démarre. Un article daté de
+2009\footnote{\textit{Attacking the BitLocker Boot Process},
+2009:\\\url{http://testlab.sit.fraunhofer.de/downloads/Publications/Attacking_the_BitLocker_Boot_Process_Trust2009.pdf}}
+propose néanmoins des pistes pour outrepasser BitLocker malgré l'utilisation
+d'un TPM. En outre, en 2010, une méthode permettant de compromettre un module
+TPM a été présentée lors de la conférence Black Hat
+DC\footnote{\url{http://blogs.windows.com/windows/b/windowssecurity/archive/2010/02/10/black-hat-tpm-hack-and-bitlocker.aspx}}.
+Il semblerait cependant que cette dernière attaque soit très difficile à
+réaliser, puisqu'elle requiert des équipements très particuliers ainsi que
+d'excellentes connaissances en électronique.
 
-BitLocker peut également être utilisé sans TPM, même si l'option est désactivée par défaut et que son activation pourrait être assimilée à une chasse au trésor dans les méandres du gestionnaire de politiques de sécurité. Dans cette situation, BitLocker requiert l'insertion d'une clé USB dans laquelle il inscrit le mot de passe permettant de déchiffrer le disque dur. Un mot de passe entré par l'utilisateur peut être utilisé en complément.
+BitLocker peut également être utilisé sans TPM, même si l'option est désactivée
+par défaut et que son activation pourrait être assimilée à une chasse au trésor
+dans les méandres du gestionnaire de politiques de sécurité. Dans cette
+situation, BitLocker requiert l'insertion d'une clé USB dans laquelle il
+inscrit le mot de passe permettant de déchiffrer le disque dur. Un mot de passe
+entré par l'utilisateur peut être utilisé en complément.
 
-Par manque de temps, et également à cause de quelques difficultés rencontrées liées à la virtualisation de notre système Windows de test, nous n'avons pas implémenté d'attaque contre BitLocker sans TPM. Néanmoins, dans cette situation, la mise en place d'un phishing récupérant le mot de passe de l'utilisateur et réalisant une copie intégrale de sa clé usb aurait a priori permis de se ramener au cas du phishing réalisé pour TrueCrypt.
-
+Par manque de temps, et également à cause de quelques difficultés rencontrées
+liées à la virtualisation de notre système Windows de test, nous n'avons pas
+implémenté d'attaque contre BitLocker sans TPM. Néanmoins, dans cette
+situation, la mise en place d'un phishing récupérant le mot de passe de
+l'utilisateur et réalisant une copie intégrale de sa clé usb aurait a priori
+permis de se ramener au cas du phishing réalisé pour TrueCrypt. Si aucun code
+exécuté n'est présent sur la clé, il doit également être possible de corrompre
+le code intéragissant avec la clé pour leaker des informations critiques
+concernant le chiffrement (clé de chiffrement, ou clé chiffrée par le mot de
+passe et mot de passe).
 
 
 %\clearpage
@@ -698,8 +731,14 @@ Par manque de temps, et également à cause de quelques difficultés rencontrée
 
 \subsection{Cold Boot Attack}
 
-Quelle que soit la solution logicielle utilisée, la clé de déchiffrement d'un disque finit tôt ou tard par apparaître dans la mémoire vive de l'ordinateur. Même si celle-ci est effacée dès extinction de l'ordinateur, il a été prouvé que les données y figurant pouvaient être récupérées dans les secondes qui suivaient, cette durée pouvant s'étendre à plusieurs minutes en refroidissant les barrettes de mémoire vive\footnote{\textit{Lest We Remember: Cold Boot Attacks on Encryption Keys}, 2008:\\
-~~~~~~\url{https://citp.princeton.edu/research/memory/}}.
+Quelle que soit la solution logicielle utilisée, la clé de déchiffrement d'un
+disque finit tôt ou tard par apparaître dans la mémoire vive de l'ordinateur.
+Même si celle-ci n'est plus lisibles quelques instants après l'extinction de
+l'ordinateur, il a été prouvé que les données y figurant pouvaient être
+récupérées dans les secondes qui suivaient, cette durée pouvant s'étendre à
+plusieurs minutes en refroidissant les barrettes de mémoire
+vive\footnote{\textit{Lest We Remember: Cold Boot Attacks on Encryption Keys},
+2008:\\ ~~~~~~\url{https://citp.princeton.edu/research/memory/}}.
 
 \begin{figure}[H]
 	\centering
@@ -721,28 +760,37 @@ Quelle que soit la solution logicielle utilisée, la clé de déchiffrement d'un
 	\cline{2-4} & 80 & 50 & 0.18\\
 	\hline
 	\end{tabular}
-	\caption{Comparaison de l'efficacité de la \textit{Cold Boot Attack},\\\textit{Lest We Remember: Cold Boot Attacks on Encryption Keys}, 2008}
+        \caption{Comparaison de l'efficacité de la \textit{Cold Boot Attack}, \textit{Lest We Remember: Cold Boot Attacks on Encryption Keys}, 2008}
 \end{figure}
 
-Il serait donc parfaitement envisageable d'ôter la RAM d'un ordinateur venant de s'éteindre, de la refroidir rapidement et d'en récupérer le contenu. Il ne resterait plus ensuite qu'à retrouver la clé de chiffrement parmi les gigaoctets de données\dots
+Il serait donc parfaitement envisageable d'ôter la RAM d'un ordinateur venant
+de s'éteindre, de la refroidir rapidement et d'en récupérer le contenu. Il ne
+resterait plus ensuite qu'à retrouver la clé de chiffrement parmi les
+gigaoctets de données\dots
 
 
 \subsection{Dump de la RAM}
 
-Sur le principe de base de la \textit{Cold Boot Attack}, en supposant un accès root à la machine cible, il est possible de réaliser une copie exacte de la mémoire vive.
-Pour réaliser le dump de la ram sans retirer physiquement la RAM de ses slots, nous réalisons une copie via une clef USB.
+Sur le principe de base de la \textit{Cold Boot Attack}, en supposant un accès
+root à la machine cible, il est possible de réaliser une copie exacte de la
+mémoire vive. Pour réaliser le dump de la ram sans retirer physiquement la RAM
+de ses slots, nous comptons sur la préservation de son contenu dans le cas d'un
+reboot hardware de la machine, après quoi nous réalisons une copie du contenu
+de la RAM via une live USB à l'emprunte en RAM la plus petite possible.
 
-Une première contrainte est que le fait de charger un OS pour réaliser un dump de la mémoire écrase 
-inévitablement une partie des données présentes en RAM. Cet OS se doit donc d'être le plus petit 
-possible. 
-Une autre contrainte est que depuis la version 2.6, il n'est plus possible de lire librement dans 
-/dev/mem. Une première solution consiste à recompiler le noyau en désactivant la sécurité 
-empêchant cette action.
+Une première contrainte est que le fait de charger un OS pour réaliser un dump
+de la mémoire écrase inévitablement une partie des données présentes en RAM.
+Cet OS se doit donc d'être le plus petit possible.  Une autre contrainte est
+que depuis la version 2.6, il n'est plus possible de lire librement dans
+/dev/mem. Une première solution consiste à recompiler le noyau en désactivant
+la sécurité empêchant cette action.
 
 %% TODO screenshot make menuconfig
 
-La deuxième solution consiste à charger \texttt{fmem}, un module noyau créant un nouveau fichier 
-dans /dev permettant d'accéder à l'ensemble de la mémoire sans aucune limite. Cette solution a pour avantage qu'elle ne nécessite pas la recompilation du noyau.
+La deuxième solution consiste à charger \texttt{fmem}, un module noyau créant
+un nouveau fichier dans /dev permettant d'accéder à l'ensemble de la mémoire
+sans aucune limite. Cette solution a pour avantage qu'elle ne nécessite pas la
+recompilation du noyau.
 
 \begin{lstlisting}[language=Bash]
 dd if=/dev/fmem of=/mnt/dump bs=1MB count=4096
@@ -753,26 +801,29 @@ parmi l'énorme quantité de données récupérée.
 
 
 \subsection{Analyse et récupération de la clef de chiffrement via Volatility}
-D'après l'ouvrage \texttt{RAM is key}\footnote{http://cryptome.org/0003/RAMisKey.pdf}
-le mot de passe se trouve dans l'espace mémoire correspondant au driver de TrueCrypt.
-De plus une recherche avec le format [1 byte size][3 null bytes][passphrase][1 null byte]
+D'après l'ouvrage \texttt{RAM is
+key}\footnote{http://cryptome.org/0003/RAMisKey.pdf} le mot de passe se trouve
+dans l'espace mémoire correspondant au driver de TrueCrypt. De plus une
+recherche avec le format [1 byte size][3 null bytes][passphrase][1 null byte]
 permet de localiser le mot de passe au sein de l'espace mémoire du driver.
 
 
 \subsection{La solution de l'acharnement: le brute-force}
 
-Dans le cas où l'attaquant a les ressources en temps et en matériel et que celui-ci souhaite 
-ardemment récupérer le contenu chiffré, il est toujours envisageable de déployer une attaque 
-par force brute. Le problème intrinsèque au mot de passe est qu'il doit à la fois être 
-suffisamment complexe pour qu'il ne puisse pas être trouvé aisément, tout en étant suffisamment 
-\textit{simple} pour que l'utilisateur puisse s'en souvenir pour le saisir sans avoir à le noter
-à côté de son poste. Même si, par des moyens mémotechniques, on peut envisager l'utilisation de mots
-de passe d'une vingtaine de caractères, il est certain que les avancées technologiques finiront tôt 
-ou tard par permettre la récupération de mots de passe de cette taille de manière relativement 
-rapide.
+Dans le cas où l'attaquant a les ressources en temps et en matériel et que
+celui-ci souhaite ardemment récupérer le contenu chiffré, il est toujours
+envisageable de déployer une attaque par force brute. Le problème intrinsèque
+au mot de passe est qu'il doit à la fois être suffisamment complexe pour qu'il
+ne puisse pas être trouvé aisément, tout en étant suffisamment \textit{simple}
+pour que l'utilisateur puisse s'en souvenir pour le saisir sans avoir à le
+noter à côté de son poste. Même si, par des moyens mémotechniques, on peut
+envisager l'utilisation de mots de passe d'une vingtaine de caractères, il est
+certain que les avancées technologiques finiront tôt ou tard par permettre la
+récupération de mots de passe de cette taille de manière relativement rapide.
 
-Il est peut-être donc temps désormais de passer à un autre type d'authentification, 
-plus complexe à outrepasser, telle que l'authentification biométrique.
+Il est peut-être donc temps désormais de passer à un autre type
+d'authentification, plus complexe à outrepasser, telle que l'authentification
+biométrique.
 
 
 
@@ -781,7 +832,6 @@ plus complexe à outrepasser, telle que l'authentification biométrique.
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
 
-\section*{Bibliographe}
-% TODO BIBLIOGRAPHIE
+
 
 \end{document}
