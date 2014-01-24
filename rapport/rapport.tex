@@ -849,19 +849,42 @@ entièrement (mise en place d'une backdoor ou d'un rootkit). Il s'agit donc
 d'attaques à fort potentiel de nuisance, ce qui n'est pas très étonnant venant
 d'attaques supposant un accès physique.
 
-% La plupart du temps, impossible de se protéger d'une attaque physique. Mais
-% attaque en deux temps. Mais chiffrement dénie souvent toute responsabilité
-% en cas de double accès au support.
 Dans la plupart des cas, il est très compliqué de se protéger d'une attaque
 avec accès physique à la machine. Protéger le BIOS avec un mot de passe pour
 éviter les boot sur systèmes tiers peut être une solution, mais cela n'est pas
-imparable (retrait de la pile du BIOS pour le réinitialiser).
+imparable (retrait de la pile du BIOS pour le réinitialiser). Il faut tout de
+même noter que certaines de ces attaques nécessitent deux accès physiques à la
+machine à des moments différents. Certains logiciel, comme TrueCrypt, ne 
+cherchent d'ailleurs pas à garantir la sécurité en cas d'attaque
+physique\footnote{\og D'après la documentation de TrueCrypt : \textit{If an
+attacker can physically access the computer hardware and you use it after the
+attacker has physically accessed it, then TrueCrypt may become unable to secure
+data on the computer}.\fg}.
 
-% BitLocker et TPM
+Certains logiciels, comme BitLocker cherchent en revanche à pousser la sécurité
+encore plus loin en introduisant des protections matérielles, comme les TPM 
+mentionnés précédemment. D'autres, comme la version de dm-crypt (implémentation
+de LUKS utilisée dans beaucoup de linux) de Kali Linux, optent pour des solutions
+plus radicales : si la personne est forcée de donner le mot de passe, elle peut
+en donner un qui efface le disque en entier. Là dessus, TrueCrypt a une politique
+plus souple, en proposant de booter sur un \og faux \fg système si un certain
+mot de passe est entré.\\
 
-% Apports du projet : détails techniques, approche critique des systèmes,
-% relativisation de l'intérêt du chiffrement de disques.
-% Exemple de la police Brésilienne et de la NSA : attaque en deux temps.
+Nous avons vu que chiffrer un disque peut s'avérer utile, mais pas suffisant
+pour assurer la sécurité des données. Un disque ayant été accédé une fois peut
+être compromis. L'utilisation du type d'attaque que nous avons mis en place
+pourrait être utile dans les affaires judiciaires (si ce n'est pas déjà
+utilisé), et éviter les fiasco comme celui du laptop chiffré avec TrueCrypt
+d'un gros bonnet de la drogue au
+Brésil\footnote{http://news.techworld.com/security/3228701/}.
+
+Ce projet nous a apporté beaucoup, notamment techniquement. Il a été l'occasion
+d'amasser beaucoup de culture sur la façon dont se déroule le boot d'une machine,
+du MBR jusqu'au chargement du noyau. Chacun à des endroits différents, que ce
+soit pour la corruption du MBR, de l'initrd des Linux ou pour la mise en place
+d'un Live OS personnalisé, nous avons pu décortiquer certains mécanismes. En
+revanche, nous avons constaté que le fait de monter une attaque robuste est une
+entreprise conséquente, tant les systèmes peuvent être hétérogènes.
 
 
 \end{document}
