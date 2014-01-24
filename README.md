@@ -28,8 +28,8 @@ If any problem is encountered, do not hesitate to contact us.
 
 ENSEIRB-MATMECA, RSR, 2013-2014
 
-- Julien CHAUMONT       : jchaumont@enseirb-matmeca.fr
-- Pierric GOURINCHAS    : pgourinchas@enseirb-matmeca.fr
-- Antoine HANRIAT       : ahanriat@enseirb-matmeca.fr
-- Florent MONJALE       : fmonjalet@enseirb-matmeca.fr
+- Julien CHAUMONT       : jchaumont [at] enseirb-matmeca.fr
+- Pierric GOURINCHAS    : pgourinchas [at] enseirb-matmeca.fr
+- Antoine HANRIAT       : ahanriat [at] enseirb-matmeca.fr
+- Florent MONJALET      : fmonjalet [at] enseirb-matmeca.fr
 
