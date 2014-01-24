@@ -93,13 +93,13 @@ S'inscrivant dans ce thème, l'objectif du projet était de trouver et d'implém
 
 
 \newpage
-\section{Le chiffrement sous Linux avec \texttt{LUKS}}
+\section{Le chiffrement sous Linux avec LUKS}
 
 \subsection{Présentation}
 
 LUKS\footnote{Linux Unified Key Setup} est une spécification de chiffrement de disque dur dont la première version remonte à 2005. L'objectif était de proposer un standard documenté et multi-plateformes (malgré ce que son nom semble indiquer). Sa dernière version en date remonte à 2011\footnote{\url{http://wiki.cryptsetup.googlecode.com/git/LUKS-standard/on-disk-format.pdf}}. C'est ce système qui est utilisé par défaut dans de nombreuses distributions Linux pour le chiffrement de partitions et/ou de disques entiers, même si les implémentations peuvent varier.
 
-Le système est relativement simple. L'utilisateur est seul possesseur d'un mot de passe. Celui-ci est demandée au démarrage de l'ordinateur et sert à déverrouiller la véritable clé de chiffrement : si le mot de passe est correct, alors la clé sera retrouvée et permettra le déchiffrement à la volée du disque chiffré. Si le mot de passe est faux, le système peut le détecter et le redemander.
+Le système est relativement simple. L'utilisateur est seul possesseur d'un mot de passe. Celui-ci est demandé au démarrage de l'ordinateur et sert à déverrouiller la véritable clé de chiffrement : si le mot de passe est correct, alors la clé sera retrouvée et permettra le déchiffrement à la volée du disque chiffré. Si le mot de passe est faux, le système peut le détecter et le redemander.
 
 \begin{figure}[H]
 	\centering
@@ -107,7 +107,7 @@ Le système est relativement simple. L'utilisateur est seul possesseur d'un mot 
 	\caption{Principe de fonctionnement simplifié de LUKS}
 \end{figure}
 
-Dans un Linux chiffré avec dm-crypt (respectant la spécification LUKS), il y a une partition de boot non chiffrée contenant un \texttt{initrd}. Il s'agit d'un OS Linux minimal servant à réaliser le boot du vrai Linux. C'est aussi lors de l'exécution de cet \texttt{initrd} que le mot de passe est demandé et que la partition chiffrée est montée de manière à être déchiffrée à la volée avec la bonne clé.
+Dans un Linux chiffré avec \texttt{dm-crypt} (respectant la spécification LUKS), il y a une partition de boot non chiffrée contenant un \texttt{initrd}. Il s'agit d'un OS Linux minimal servant à réaliser le boot du vrai Linux. C'est aussi lors de l'exécution de cet \texttt{initrd} que le mot de passe est demandé et que la partition chiffrée est montée de manière à être déchiffrée à la volée avec la bonne clé.
 
 \begin{figure}[H]
 	\centering
@@ -136,12 +136,12 @@ potentiellement faible.
 
 L'attaque se divise en deux temps :
 \begin{enumerate}
-    \item Intercepter le mot de passe.
-    \item Le communiquer à l'attaquant.
+    \item intercepter le mot de passe,
+    \item le communiquer à l'attaquant.
 \end{enumerate}
 
-La communication à l'attaquant peut se faire via internet (on supposera qu'un
-Laptop bénéficie d'un accès régulier à internet), ou par stockage discret
+La communication à l'attaquant peut se faire via Internet (on supposera qu'un
+laptop bénéficie d'un accès régulier), ou par stockage discret
 localement, puis récupération lors d'un deuxième accès à la machine
 (potentiellement au moment du vol de données).
 
@@ -151,7 +151,7 @@ localement, puis récupération lors d'un deuxième accès à la machine
 % Écriture à la main de l'attaque complète
 % Automatisation de l'infection en shell
 
-Nous avons réalisé et testé l'attaque sur Debian Wheezy uniquement, l'attaque
+Nous avons réalisé et testé l'attaque sur Debian Wheezy uniquement. L'attaque
 fonctionne certainement sur d'autres versions, mais nous avons préféré nous
 concentrer sur l'élaboration d'attaques contre d'autres technologies une fois
 celle-ci en place pour un système, l'intérêt étant d'établir des preuves de 
@@ -162,24 +162,23 @@ Pour réaliser cette attaque, nous avons procédé en trois temps :
 \begin{enumerate}
     \item D'abord de la documentation sur le fonctionnement général de LUKS et
     des attaques existantes. Cette phase de documentation et de recherche a
-    impliqué à la fois des recherches documentaires\footnote{notamment le site
-    http://www.wzdftpd.net/blog/index.php?post/2009/10/28/44-implementing-the-evil-maid-attack-on-linux-with-luks},
+    impliqué à la fois des recherches documentaires\footnote{Notamment l'article suivant: \url{http://www.wzdftpd.net/blog/?post/2009/10/28/44-implementing-the-evil-maid-attack-on-linux-with-luks}},
     et des recherches dans les scripts de l'\texttt{initrd} avec entre autres
     \texttt{grep} et \texttt{find} pour identifier les fichiers intéressants.
     Il a ensuite fallu lire et comprendre ces scripts.
     \item Puis la réalisation de l'attaque \og à la main \fg, c'est-à-dire la 
-    construction d'un initrd malicieux à partir de l'initrd présent dans la
+    construction d'un \texttt{initrd} malicieux à partir de l'\texttt{initrd} présent dans la
     partition \texttt{/boot} d'un Debian.
     \item Enfin l'automatisation de l'attaque, réalisée en shell pur, pour 
     l'exercice d'une part, et pour pouvoir tourner sur un Unix bootable minimal
     d'autre part. Le C aurait pu être utilisé, mais la puissance des commandes
-    Unix a été préférée. Les langages de type python ont été exclus à cause du
+    Unix a été préférée. Les langages de type Python ont été exclus à cause du
     critère de minimalité du système à partir duquel l'attaque sera réalisée.
 \end{enumerate}
 
 
 \subsubsection*{Réalisation}
-Les concepts de la réalisation de cette attaque sont très simples, sa réalisation
+Les concepts de la réalisation de cette attaque sont très simples. Sa réalisation
 en shell a été, quant à elle, plus délicate. Nous ne détaillerons pas réellement
 l'écriture du code, puisqu'il est disponible dans les sources du projet.
 
@@ -200,7 +199,7 @@ Les étapes de l'infection sont les suivantes :
     \texttt{/scripts/local-top}), trouver et modifier la partie qui demande le
     mot de passe et le passe au programme mettant en place le déchiffrement à la
     volée, puis la changer pour écrire le mot de passe à un endroit du système
-    de ficher temporaire du initrd. Pour cet exemple, nous avons choisi le path
+    de fichiers temporaire du \texttt{initrd}. Pour cet exemple, nous avons choisi le chemin
     \texttt{/dev/.cryptpass}, car \texttt{/dev} est conservé lors du montage
     du vrai système de fichiers, cela a donc facilité le développement et le
     debug du programme.
@@ -208,52 +207,51 @@ Les étapes de l'infection sont les suivantes :
     système en \textit{read-write} et non en \textit{read-only}.
     \item Modifier le script \texttt{init} pour qu'il :
     \begin{itemize}
-        \item Lise le mot de passe là où il a été stocké.
-        \item Supprime le fichier qui contenait le mot de passe (pour plus de 
-        discrétion).
-        \item Insère à la fin du \texttt{rc.local} du système un script qui envoie le mot
-        de passe sur internet et se supprime du \texttt{rc.local} une fois que c'est fait.
-        Le détail et la critique de la manière d'envoyer sur internet sera faite
+        \item lise le mot de passe là où il a été stocké;
+        \item supprime le fichier qui contenait le mot de passe (pour plus de 
+        discrétion);
+        \item insère à la fin du \texttt{rc.local} du système un script qui envoie le mot
+        de passe sur Internet et se supprime du \texttt{rc.local} une fois que c'est fait.
+        Le détail et la critique de la manière d'envoyer sur Internet sera faite
         plus loin.
     \end{itemize}
     \item Recompresser l'\texttt{initrd} et le remettre au bon endroit avec le bon nom.
 \end{enumerate}
 
-À la fin de cette infection, à chaque boot du Debian, le mot de passe sera
-récupéré et envoyé sur internet.
+À la fin de cette infection, à chaque boot du système Debian, le mot de passe sera
+récupéré et envoyé sur Internet.
 
-L'envoi sur internet consiste en une simple requête GET sur une URL que nous
-avons mis en place, qui permet de mémoriser un argument de la requête. C'est une
+L'envoi sur Internet consiste en une simple requête \texttt{GET} sur une URL que nous
+avons mise en place et permettant de mémoriser un argument de la requête. C'est une
 version simpliste, nous aurions pu envisager le post sur un compte twitter ou
 utiliser un autre type de serveur permettant de récupérer de l'information de
 manière anonyme. Nous n'avons pas cherché à mettre l'accent sur la solidité de
 la méthode d'envoi sur le net, le tout était de démontrer que cela était
 facilement possible.
 
-Nous avons utilisé netcat pour l'envoi de la requête, l'idéal aurait peut-être
+Nous avons utilisé \texttt{netcat} pour l'envoi de la requête, l'idéal aurait peut-être
 été de tester la présence d'un certain nombre d'utilitaires sur la machine et
-choisir l'un d'entre eux (netcat, telnet...), ou d'embarquer notre propre
-utilitaire.
+de choisir l'un d'entre eux (\texttt{netcat}, \texttt{telnet},\dots), ou d'embarquer notre propre utilitaire.
 
 \subsubsection*{Conclusion sur l'attaque}
 
-En réalisant cette attaque, nous avons pu voir à quelle point il pouvait être
+En réalisant cette attaque, nous avons pu voir à quel point il pouvait être
 facile de compromettre un système, même chiffré en ayant juste un accès physique
 ou root à la machine (un accès root est suffisant pour réaliser cette attaque).
 Sur les systèmes chiffrés avec LUKS, il est même relativement facile de récupérer
 la clé de chiffrement elle-même, puisqu'il s'agit simplement d'exécuter une
 commande puis de fournir le mot de passe actuel (qui est en notre possession). Il 
-suffit de parser la sortie de cette commande pour récupérer la clé. Nous ne 
+suffit ensuite de parser la sortie de cette commande pour récupérer la clé. Nous ne 
 l'avons pas fait pour passer plus de temps sur d'autres sujets, mais le réaliser
 serait encore une fois peu difficile en théorie (et en pratique).
 
-En revanche, les limites de cette attaque, comme de toute attaque sont des
-possibles problèmes de robustesse aux changements de noms de variable, de forme
-de code. Ces problèmes sont presque inévitables, mais rendent l'infection
+En revanche, les limites de cette attaque sont des
+possibles problèmes de robustesse face aux changements de noms de variables ou de forme
+de code par exemple. Ces problèmes sont presque inévitables, mais rendent l'infection
 fragile.
 
 Il est bon de noter que cette attaque remonte jusqu'au système et permet
-d'exécuter du code arbitraire en root sur la machine (via rc.local pour notre 
+d'exécuter du code arbitraire en root sur la machine (via \texttt{rc.local} pour notre 
 cas, mais tout est accessible), et d'avoir accès à l'intégralité du système de
 fichiers en clair. Il est donc possible d'introduire n'importe quelle backdoor,
 rootkit, keylogger dans le système, et même de sortir des données du système sans
@@ -263,7 +261,7 @@ avoir un nouvel accès physique.
 
 Fedora diffère de Debian sur de nombreux points. L'une de ces différences est l'utilisation de \texttt{systemd} par Fedora, alors que Debian utilise par défaut le démon \texttt{init} de \textit{System V}. C'est néanmoins une distribution très utilisée, et il était donc intéressant de reproduire l'attaque sur celle-ci. La principale différence avec l'attaque faite sur Debian est que la partie intéressante de l'image \texttt{initramfs} (qui remplace le \texttt{initrd} de Debian) n'est pas un simple script shell, mais un exécutable binaire.
 
-Sur le principe, l'attaque reste la même : décompresser l'image \texttt{initramfs}, trouver et patcher le fichier sensible se trouvant à l'intérieur, puis reconstruire l'image pour remplacer l'originale. Ceci étant, l'écriture dans un script étant bien plus simple à réaliser que l'écriture dans un fichier binaire, le choix a été de remplacer directement le fichier de départ par une autre version compilée par nos soins. Les sources de \texttt{systemd} étant en effet disponibles très simplement, il est ensuite relativement facile de modifier le bon fichier C --- en l'occurrence \texttt{cryptsetup.c} --- et de recompiler le tout.
+Sur le principe, l'attaque reste la même : décompresser l'image \texttt{initramfs}, trouver et patcher le fichier sensible se trouvant à l'intérieur, puis reconstruire l'image pour remplacer l'originale. Ceci étant, l'écriture dans un script étant bien plus simple à réaliser que l'écriture dans un fichier binaire, le choix a été de remplacer directement le fichier de départ par une autre version compilée par nos soins. Les sources de \texttt{systemd} étant en effet disponibles très simplement, il est ensuite relativement facile de modifier le bon fichier C --- en l'occurrence \texttt{cryptsetup.c} --- et de recompiler le tout pour générer les fichiers binaires patchés --- l'exécutable \texttt{systemd-cryptsetup} ici.
 
 La backdoor insérée dans le code consiste simplement à récupérer le mot de passe entré par l'utilisateur et à le dissimuler dans la partition de démarrage, de sorte qu'il puisse être récupéré par l'attaquant. Pour ce faire, une nouvelle hypothèse de travail a été introduite, qui est que l'ordinateur cible utilise un système de fichiers de type ext4 (ce qui est généralement le cas). Il fallait en effet déterminer un endroit du disque où l'insertion du mot de passe ne gênerait pas le fonctionnement normal de l'appareil, et de tels emplacements dépendent grandement du système de fichiers.
 
@@ -277,7 +275,7 @@ if(fileno != -1) {
 }
 \end{lstlisting}
 
-Il est ensuite aisé de reprendre les scripts écrits pour l'infection de Debian et de les adapter à ce nouveau cas, en ajoutant cette fois un script qui devra s'exécuter lors du deuxième accès de l'attaquant à la machine afin de récupérer le mot de passe et effacer ses traces (on aura pris soin, lors du premier accès, à avoir réalisé une copie du binaire \texttt{systemd-cryptsetup} original pour le remettre à sa place).
+Il est ensuite aisé de reprendre les scripts écrits pour l'infection de Debian et de les adapter à ce nouveau cas, en ajoutant cette fois un script qui devra s'exécuter lors du deuxième accès de l'attaquant à la machine afin de récupérer le mot de passe et effacer ses traces (on aura pris soin, lors du premier accès, d'avoir réalisé une copie du binaire \texttt{systemd-cryptsetup} original pour le remettre à sa place).
 
 \begin{lstlisting}[language=Bash]
 # Retrieve the password by copying the first 1024 bytes of the sector
@@ -293,7 +291,7 @@ hexdump -C passdump-devsda1
 
 Il était initialement prévu de mener l'attaque comme sur Debian en profitant d'un script lancé au démarrage de l'ordinateur pour envoyer le mot de passe sur Internet. Des difficultés ont été rencontrées et nous ont contraint à changer de tactique pour celle qui a finalement été adoptée.
 
-Le problème majeur est le fait que nous n'ayons pas trouvé précisément quels binaires de systemd étaient appelés après montage du système déchiffré. L'autre point était que sur Fedora, le script \texttt{rc.local} utilisé sur Debian n'est par défaut pas pris en charge, et il faut au préalable avoir démarré le service correspondant.
+Le problème majeur est le fait que nous n'ayons pas trouvé précisément quels binaires de \texttt{systemd} étaient appelés après montage du système déchiffré. L'autre point était que sur Fedora, le script \texttt{rc.local} utilisé sur Debian n'est par défaut pas pris en charge, et il faut au préalable avoir démarré le service correspondant.
 
 Avec un peu plus de temps, ces problèmes auraient été résolus, mais plutôt que de perdre du temps à tenter de réaliser la même attaque que précédemment, nous avons fais le choix d'essayer une autre méthode.
 
@@ -305,12 +303,12 @@ Avec un peu plus de temps, ces problèmes auraient été résolus, mais plutôt 
 
 TrueCrypt est un logiciel développé dès 1997 et toujours maintenu; la dernière version remontant à 2012. Bien que sa licence\footnote{\url{http://www.truecrypt.org/legal/license}} ne fasse pas de lui un logiciel libre, son code source est gratuitement distribué\footnote{\url{http://www.truecrypt.org/downloads2}}. Écrit en grande partie en langage C et en assembleur, TrueCrypt est disponible sur les systèmes Windows, Linux et Mac OS X. Parmi les nombreuses fonctionnalités du logiciel, on compte notamment:
 \begin{itemize}
-	\item Le chiffrement de dossiers
-	\item Le chiffrement de partitions
-	\item Le chiffrement de disques complets
+	\item le chiffrement de dossiers;
+	\item le chiffrement de partitions;
+	\item le chiffrement de disques complets.
 \end{itemize}
 
-Un type d'attaque ayant été réalisé sur Linux et ne possédant pas de Mac, nous avons choisi de concentrer nos efforts sur TrueCrypt pour Windows. Nous avons également choisi de nous concentrer sur l'attaque d'un disque entièrement chiffré, présentant à première vue plus de défi qu'une attaque présentant une partie d'un file system en clair.
+Un type d'attaque ayant été réalisé sur Linux et ne possédant pas de Mac, nous avons choisi de concentrer nos efforts sur TrueCrypt pour Windows. Nous avons également choisi de nous concentrer sur l'attaque d'un disque entièrement chiffré, présentant à première vue plus de défi qu'une attaque sur un disque dont une partie se retrouve non chiffrée.
 
 \subsection{Compilation \textit{maison}}
 
