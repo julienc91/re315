@@ -566,7 +566,7 @@ L'attaque consiste en la séquence d'actions suivante :
     \centering
     \includegraphics[height=0.3\textheight]{img/pile_tc.png}
     \caption{Vu de l'état de la pile lors de l'appel à \texttt{AskPassword} par
-             le code inséré.}
+             le code inséré (Logger sur le schéma).}
     \label{ask_tweak}
 \end{figure}
 
@@ -578,10 +578,10 @@ avons gardé le même nom (il s'agit du fichier \texttt{logger.asm}).
 Ce code a un fonctionnement très simple : il commence par réempiler l'argument
 \texttt{\&password} (la référence sur la variable \texttt{password}, ce qui
 correspond en assembleur à son adresse) attendu par \texttt{AskPassword}, puis
-appelle cette fonction.  \footnote{Comme expliqué plus haut, l'appel à
+appelle cette fonction \footnote{Comme expliqué plus haut, l'appel à
 \texttt{AskPassword} est patché lors de l'infection, l'adresse pointée par le
 call dans le code est fictive.}. Lorsqu'elle est appelée, \texttt{AskPassword}
-remplira la structure Password avec le bon contenu, et le code interposé n'aura 
+remplira la structure Password avec le bon contenu, et le code interposé n'aura
 qu'à dumper le contenu de celle-ci.
 
 Le dump de la structure est une question qui peut paraître délicate de prime
@@ -599,7 +599,7 @@ réserve pour stocker le bootloader compressé. Nous allons donc utiliser le der
 secteur\footnote{Un secteur fait généralement 512 octets} réservé pour stocker
 le mot de passe (l'espace libre est bien supérieur à la taille d'un secteur).
 Le bootloader compressé commence au secteur 5 et réserve 57 secteurs (constaté
-dans nos tests), 5 + 57 -1 = 61. Le dernier secteur réservé par TrueCrypt est le
+dans nos tests), $5 + 57 - 1 = 61$. Le dernier secteur réservé par TrueCrypt est le
 numéro 61, d'où le choix de Rutkowska.
 
 Ce nombre n'étant pas nécessairement le même pour toutes les installations (mais
@@ -832,6 +832,29 @@ biométrique.
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
 
+À l'issu de ce projet, nous avons produit trois attaques (dont deux aux
+scénarios analogues) ainsi qu'une clé USB permettant d'exécuter facilement ces
+attaques sur un système réel. Celles-ci restent bien entendu plus des preuves
+de concept que des attaques robustes destinés à fonctionner sur le plus de
+systèmes possibles.  Ceci étant, certaines de ces attaques (et potentiellement
+toutes) ont débouchées sur la possibilité d'infecter le système chiffré
+entièrement (mise en place d'une backdoor ou d'un rootkit). Il s'agit donc
+d'attaques à fort potentiel de nuisance, ce qui n'est pas très étonnant venant
+d'attaques supposant un accès physique.
+
+% La plupart du temps, impossible de se protéger d'une attaque physique. Mais
+% attaque en deux temps. Mais chiffrement dénie souvent toute responsabilité
+% en cas de double accès au support.
+Dans la plupart des cas, il est très compliqué de se protéger d'une attaque
+avec accès physique à la machine. Protéger le BIOS avec un mot de passe pour
+éviter les boot sur systèmes tiers peut être une solution, mais cela n'est pas
+imparable (retrait de la pile du BIOS pour le réinitialiser).
+
+% BitLocker et TPM
+
+% Apports du projet : détails techniques, approche critique des systèmes,
+% relativisation de l'intérêt du chiffrement de disques.
+% Exemple de la police Brésilienne et de la NSA : attaque en deux temps.
 
 
 \end{document}
