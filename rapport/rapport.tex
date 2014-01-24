@@ -107,7 +107,7 @@ Le système est relativement simple. L'utilisateur est seul possesseur d'un mot 
 	\caption{Principe de fonctionnement simplifié de LUKS}
 \end{figure}
 
-Dans un linux chiffré avec dm-crypt (respectant la spécification LUKS), il y a une partition de boot non chiffrée contenant un \texttt{initrd}. Il s'agit d'un OS linux minimal servant à réaliser le boot du vrai linux. C'est aussi lors de l'exécution de cet \texttt{initrd} que le mot de passe est demandé et que la partition chiffrée est montée de manière à être déchiffrée à la volée avec la bonne clé.
+Dans un Linux chiffré avec dm-crypt (respectant la spécification LUKS), il y a une partition de boot non chiffrée contenant un \texttt{initrd}. Il s'agit d'un OS Linux minimal servant à réaliser le boot du vrai Linux. C'est aussi lors de l'exécution de cet \texttt{initrd} que le mot de passe est demandé et que la partition chiffrée est montée de manière à être déchiffrée à la volée avec la bonne clé.
 
 \begin{figure}[H]
 	\centering
@@ -164,7 +164,7 @@ Pour réaliser cette attaque, nous avons procédé en trois temps :
     des attaques existantes. Cette phase de documentation et de recherche a
     impliqué à la fois des recherches documentaires\footnote{notamment le site
     http://www.wzdftpd.net/blog/index.php?post/2009/10/28/44-implementing-the-evil-maid-attack-on-linux-with-luks},
-    et des recherches dans les scripts de l'initrd avec entre autres
+    et des recherches dans les scripts de l'\texttt{initrd} avec entre autres
     \texttt{grep} et \texttt{find} pour identifier les fichiers intéressants.
     Il a ensuite fallu lire et comprendre ces scripts.
     \item Puis la réalisation de l'attaque \og à la main \fg, c'est-à-dire la 
@@ -190,11 +190,11 @@ puisse être \textit{leaké} via internet.
 Les étapes de l'infection sont les suivantes :
 \begin{enumerate}
     \item Trouver toutes les partitions bootables.
-    \item Essayer de les infecter. Si la partition ne correspond pas à un /boot,
+    \item Essayer de les infecter. Si la partition ne correspond pas à un \texttt{/boot},
     l'infection retournera un code d'erreur et il suffira de tenter l'infection
     sur la partition suivante : soit la partition n'est pas de la forme cherchée,
     soit le script n'est pas capable de l'infecter correctement.
-    \item Monter la partition, trouver et décompresser le ou les initrd. Le
+    \item Monter la partition, trouver et décompresser le ou les \texttt{initrd}. Le
     script essaiera d'infecter chacun d'entre eux.
     \item Trouver le script \texttt{cryptroot} (probablement dans
     \texttt{/scripts/local-top}), trouver et modifier la partie qui demande le
@@ -204,19 +204,19 @@ Les étapes de l'infection sont les suivantes :
     \texttt{/dev/.cryptpass}, car \texttt{/dev} est conservé lors du montage
     du vrai système de fichiers, cela a donc facilité le développement et le
     debug du programme.
-    \item Modifier le script \texttt{init} pour qu'il monte la partition du
+    \item Mofifier le script \texttt{init} pour qu'il monte la partition du
     système en \textit{read-write} et non en \textit{read-only}.
     \item Modifier le script \texttt{init} pour qu'il :
     \begin{itemize}
         \item Lise le mot de passe là où il a été stocké.
         \item Supprime le fichier qui contenait le mot de passe (pour plus de 
         discrétion).
-        \item Insère à la fin du rc.local du système un script qui envoie le mot
-        de passe sur internet et se supprime du rc.local une fois que c'est fait.
+        \item Insère à la fin du \texttt{rc.local} du système un script qui envoie le mot
+        de passe sur internet et se supprime du \texttt{rc.local} une fois que c'est fait.
         Le détail et la critique de la manière d'envoyer sur internet sera faite
         plus loin.
     \end{itemize}
-    \item Recompresser l'initrd et le remettre au bon endroit avec le bon nom.
+    \item Recompresser l'\texttt{initrd} et le remettre au bon endroit avec le bon nom.
 \end{enumerate}
 
 À la fin de cette infection, à chaque boot du Debian, le mot de passe sera
@@ -547,7 +547,7 @@ L'attaque consiste en la séquence d'actions suivante :
     dans le code binaire au moment de l'infection grâce à la recherche d'une
     chaîne binaire l'identifiant de manière unique (une seule occurrence dans
     le fichier). On aurait pu directement donner l'offset de l'appel, mais on
-    considérera qu'un fichier issu de code C compilé est plus prône à varier
+    considèrera qu'un fichier issu de code C compilé est plus prône à varier
     que le programme en assembleur du bootloader (où des offsets avaient été
     utilisés). Ceci étant, les deux méthodes ont leurs défauts.
     \item Une fois l'appel retrouvé, on a toutes les informations : l'offset de
@@ -581,7 +581,7 @@ correspond en assembleur à son adresse) attendu par \texttt{AskPassword}, puis
 appelle cette fonction \footnote{Comme expliqué plus haut, l'appel à
 \texttt{AskPassword} est patché lors de l'infection, l'adresse pointée par le
 call dans le code est fictive.}. Lorsqu'elle est appelée, \texttt{AskPassword}
-remplira la structure Password avec le bon contenu, et le code interposé n'aura 
+remplira la structure \texttt{Password} avec le bon contenu, et le code interposé n'aura 
 qu'à dumper le contenu de celle-ci.
 
 Le dump de la structure est une question qui peut paraître délicate de prime
@@ -589,7 +589,7 @@ abord : aucun système de fichier n'est à notre disposition à ce moment du boo
 Alors où le stocker ?
 
 La réponse que Rutkowska a apporté à la question est simple : sur le disque.
-Dans son code, elle utilise l'interruption 0x13 pour les I/O disque pour écrire
+Dans son code, elle utilise l'interruption \texttt{0x13} pour les I/O disque pour écrire
 dans le secteur 61 (en les numérotant depuis 0).
 
 Surpris par ce chiffre, nous avons décidé de chercher un endroit où nous aurions
@@ -711,16 +711,14 @@ BitLocker peut également être utilisé sans TPM, même si l'option est désact
 par défaut et que son activation pourrait être assimilée à une chasse au trésor
 dans les méandres du gestionnaire de politiques de sécurité. Dans cette
 situation, BitLocker requiert l'insertion d'une clé USB dans laquelle il
-
 inscrit un fichier permettant de déchiffrer le disque dur. Il est alors
 étonnamment trivial d'outrepasser BitLocker en mettant la main sur cette clé USB
 --- notons que les clés USB figurent très certainement parmi les objets les plus
-faciles à perdre ---, puisqu'une simple copie sur un autre support du fichier
+faciles à perdre ---, puisqu'une simple copie sur un autre support du fichier 
 \texttt{BEK} qu'elle contient suffit: la nouvelle clé USB sera tout aussi bien
-validée que l'originale par BitLocker. Pour augmenter la sécurité, BitLocker
-aurait pu par exemple mettre en place en complément un système de mot de passe
-saisi par l'utilisateur, ce qui n'est malheureusement pas le cas dans cette
-situation.
+validée que l'originale par BitLocker. Pour augmenter la sécurité, BitLocker aurait
+pu par exemple mettre en place en complément un système de mot de passe saisi par 
+l'utilisateur, ce qui n'est malheureusement pas le cas dans cette situation.
 
 %\clearpage
 \section{Les autres solutions}
@@ -769,7 +767,7 @@ gigaoctets de données\dots
 
 Sur le principe de base de la \textit{Cold Boot Attack}, en supposant un accès
 root à la machine cible, il est possible de réaliser une copie exacte de la
-mémoire vive. Pour réaliser le dump de la RAM sans retirer physiquement la RAM
+mémoire vive. Pour réaliser le dump de la RAM sans la retirer physiquement
 de ses slots, nous comptons sur la préservation de son contenu dans le cas d'un
 reboot hardware de la machine, après quoi nous réalisons une copie du contenu
 de la RAM via une live USB à l'emprunte en RAM la plus petite possible.
@@ -832,11 +830,11 @@ biométrique.
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
 
-À l'issu de ce projet, nous avons produit trois attaques (dont deux aux
-scénarios analogues) ainsi qu'une clé USB permettant d'exécuter facilement ces
-attaques sur un système réel. Celles-ci restent bien entendu plus des preuves
+À l'issue de ce projet, nous avons produit trois attaques (dont deux aux
+scénarios analogues) ainsi qu'une clé USB permettant les exécuter facilement
+sur un système réel. Celles-ci restent bien entendu plus des preuves
 de concept que des attaques robustes destinés à fonctionner sur le plus de
-systèmes possibles.  Ceci étant, certaines de ces attaques (et potentiellement
+systèmes possibles. Ceci étant, certaines de ces attaques (et potentiellement
 toutes) ont débouchées sur la possibilité d'infecter le système chiffré
 entièrement (mise en place d'une backdoor ou d'un rootkit). Il s'agit donc
 d'attaques à fort potentiel de nuisance, ce qui n'est pas très étonnant venant
@@ -847,7 +845,7 @@ avec accès physique à la machine. Protéger le BIOS avec un mot de passe pour
 éviter les boot sur systèmes tiers peut être une solution, mais cela n'est pas
 imparable (retrait de la pile du BIOS pour le réinitialiser). Il faut tout de
 même noter que certaines de ces attaques nécessitent deux accès physiques à la
-machine à des moments différents. Certains logiciel, comme TrueCrypt, ne 
+machine à des moments différents. Certains logiciels, comme TrueCrypt, ne 
 cherchent d'ailleurs pas à garantir la sécurité en cas d'attaque
 physique\footnote{\og D'après la documentation de TrueCrypt : \textit{If an
 attacker can physically access the computer hardware and you use it after the
@@ -856,10 +854,10 @@ data on the computer}.\fg}.
 
 Certains logiciels, comme BitLocker cherchent en revanche à pousser la sécurité
 encore plus loin en introduisant des protections matérielles, comme les TPM 
-mentionnés précédemment. D'autres, comme la version de dm-crypt (implémentation
-de LUKS utilisée dans beaucoup de linux) de Kali Linux, optent pour des solutions
-plus radicales : si la personne est forcée de donner le mot de passe, elle peut
-en donner un qui efface le disque en entier. Là dessus, TrueCrypt a une politique
+mentionnés précédemment. D'autres, comme la version de \texttt{dm-crypt} (implémentation
+de LUKS utilisée dans beaucoup de Linux) de Kali Linux, optent pour des solutions
+plus radicales: si la personne est forcée de donner le mot de passe, elle peut
+en donner un qui effacera intégralement le disque dur. Là dessus, TrueCrypt a une politique
 plus souple, en proposant de booter sur un \og faux \fg système si un certain
 mot de passe est entré.\\
 
@@ -874,7 +872,7 @@ Brésil\footnote{http://news.techworld.com/security/3228701/}.
 Ce projet nous a apporté beaucoup, notamment techniquement. Il a été l'occasion
 d'amasser beaucoup de culture sur la façon dont se déroule le boot d'une machine,
 du MBR jusqu'au chargement du noyau. Chacun à des endroits différents, que ce
-soit pour la corruption du MBR, de l'initrd des Linux ou pour la mise en place
+soit pour la corruption du MBR, de l'\texttt{initrd} des Linux ou pour la mise en place
 d'un Live OS personnalisé, nous avons pu décortiquer certains mécanismes. En
 revanche, nous avons constaté que le fait de monter une attaque robuste est une
 entreprise conséquente, tant les systèmes peuvent être hétérogènes.
