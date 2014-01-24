@@ -341,13 +341,6 @@ Une autre solution beaucoup plus simple à mettre en place était de falsifier l
 Le programme reprend avec soin l'affichage exact de l'écran de démarrage par défaut de TrueCrypt en version 7.1a (la dernière en date), et demande la saisie du mot de passe. L'opération est répétée trois fois avant d'afficher un message d'erreur invitant l'utilisateur à redémarrer sa machine. Entre temps, les mots de passe saisis par l'utilisateur auront été soigneusement stockés en mémoire.
 
 \begin{figure}[H]
-        % FIXME L'erreur de TrueCrypt pour un mot de passe raté est plutôt
-        % quelque chose du genre "Invalid Password. Retry.", à vérifier !
-        
-        % ANSWER L'idée était d'afficher un message différent de d'habitude
-        % pour "justifier" l'erreur qui apparaît au bout de 3 tentatives.
-        % Et ce message d'erreur existe bien:
-        % http://www.truecrypt.org/docs/troubleshooting
 	\centering
 	\includegraphics[width=400px]{img/truecrypt_ncurses.png}
 	\caption{Affichage du programme de phishing TrueCrypt}
@@ -379,12 +372,7 @@ Cette façon de faire a néanmoins de nombreuses lacunes:
 	\end{itemize}
 	\item on suppose que l'écran d’accueil de TrueCrypt est celui qui doit apparaître en premier
 	\begin{itemize}
-        % FIXME Faire cohabiter Grub et TrueCrypt est un problème délicat en
-        % soi, je pense qu'on peut l'exclure de notre type d'attaque (contre
-        % le chiffrement total de disque). TrueCrypt s'installe dans le MBR,
-        % si on boot sur ce disque dur, TrueCrypt devra à priori être le premier
-        % à apparaître.
-		\item cette supposition assez forte rejette par exemple les machines démarrant sur Grub
+		\item Grub et TrueCrypt cohabitent généralement très mal, et TrueCrypt est donc souvent celui qui s'affiche en premier
 	\end{itemize}
 \end{itemize}
 }
@@ -396,13 +384,13 @@ phishing en conséquence.
 
 \subsection{Modification du secteur de boot}
 
-Après examen plus en profondeur du fonctionnement de TrueCrypt, nous avons
+Après un examen plus en profondeur du fonctionnement de TrueCrypt, nous avons
 choisi d'implémenter une attaque qui consisterait en la modification directe du
 code présent dans le secteur d'amorçage.
 
 \subsubsection{Méthodologie}
 
-Pour mener à bien cette attaque, nous avons du commencer par nous renseigner
+Pour mener à bien cette attaque, nous avons dû commencer par nous renseigner
 sur les mécanismes impliqués dans le boot d'une machine sur un disque dur : il
 s'agit principalement de l'exécution d'une petite portion de code présente dans le
 MBR (premier secteur du disque dur).
@@ -412,20 +400,20 @@ assembleur correspondante dans les sources de TrueCrypt, contenant des
 informations donnant plus de sens au code (évitant par la même occasion de perdre du
 temps à reverser le code désassemblé). Il a tout de même fallu se familiariser
 avec les diverses interruptions utilisées pour les I/O, ainsi que quelques
-spécificités de l'assembleur 16 bits présent dans les MBR.
+spécificités de l'assembleur 16 bits présentes dans les MBR.
 
 Une fois la séquence de boot comprise et les fonctions clés repérées (notamment
-la fonction AskPassword), nous avions pour projet d'intercepter le mot de passe
+la fonction \texttt{AskPassword}), nous avions pour projet d'intercepter le mot de passe
 entré par l'utilisateur et de le sauvegarder quelque part (sans encore savoir
 où).
 
 C'est la découverte de l'implémentation d'une attaque similaire par Johanna
-Rutkowska\footnote{Plus d'informations sur
-http://theinvisiblethings.blogspot.ch/2009/10/evil-maid-goes-after-truecrypt.html}
+Rutkowska\footnote{Plus d'informations sur 
+\url{http://theinvisiblethings.blogspot.ch/2009/10/evil-maid-goes-after-truecrypt.html}}
 (\textit{Evil Maid Goes After TrueCrypt}) qui a accéléré le processus
 d'écriture de l'attaque. Le résultat est bel et bien notre production et notre
-vision de l'attaque, mais une grande partie du debug été facilitée par la
-lecture de l'implémentation de Johanna Rutkowska.
+vision de l'attaque, mais une grande partie du debug a été facilitée par la
+lecture de son implémentation.
 
 Nous allons maintenant parler plus en profondeur de chaque étape de l'attaque.
 
@@ -435,7 +423,7 @@ La séquence de boot de TrueCrypt est relativement simple, comme le montre la
 figure \ref{tc_boot}. Toute la séquence se déroule en mode réel, c'est à dire
 en mode 16 bits.
 
-Il est bon de noter que le seul semblant d'OS qui est à la disposition du
+Il est bon de noter que le seul semblant d'OS qui soit à la disposition du
 programme à ce stade du boot est le BIOS, et les interruptions qu'il propose.
 TrueCrypt réimplemente donc un ensemble de fonctions (notamment d'affichage)
 utilisant les interruptions disponibles au niveau assembleur.
@@ -449,7 +437,7 @@ Les étapes sont les suivantes :
     TrueCrypt.
     \item Si l'étape précédente est réussie, alors le bootloader fraîchement
     décompressé est exécuté. Ceci est réalisé via l'empilement du registre de
-    segment \texttt{es}\footnote{en assembleur Intel 16bits, le registre
+    segment \texttt{es}\footnote{En assembleur Intel 16bits, le registre
     \texttt{es} est utilisé conjointement à d'autres registres pour simuler un
     adressage sur 20 bits (\texttt{es << 4 + reg}).} (valant 0 ici) et de
     l'adresse du code dans le segment, en l'occurrence \texttt{0x100} puis
@@ -468,7 +456,7 @@ Les étapes sont les suivantes :
 \subsubsection{Infection du code}
 
 Comme nous avons pu l'identifier précédemment, le mot de passe est récupéré et
-utilisé par le bootloader de TrueCrypt, l'idée va donc être de modifier ce
+utilisé par le bootloader de TrueCrypt. L'idée va donc être de modifier ce
 bootloader pour \textit{leaker} le mot de passe.
 
 \paragraph{Obtention du binaire du bootloader}~
@@ -479,17 +467,17 @@ le code assembleur source et le code présent dans le MBR après compilation,
 les valeurs indiquant depuis quels secteurs du disque dur ce bootloader était
 chargé. Cela a permis d'automatiser la récupération du bootloader compressé,
 et de s'apercevoir d'un espace vide de quelques secteurs réservé par TrueCrypt,
-qui nous servira par la suite.
+et qui nous servira par la suite.
 
 Pour décompresser le binaire, on peut soit appeler le décompresseur de
 TrueCrypt (en l'adaptant à notre environnement de travail), soit noter qu'il
 s'agit d'une implémentation de GZip qui a été adaptée au projet. Nous avons
 choisi la deuxième solution, et décompressé le code via GZip. Les options de
-recompression sont visibles dans le Makefile du secteur de boot (qui utilise
-gzip).
+recompression sont visibles dans le \texttt{Makefile} du secteur de boot (qui utilise
+GZip).
 
 Ce binaire exécutable est au format COM, format très simple où il n'y a qu'un
-seul segment contenant code et data. Les premiers octets du fichiers sont
+seul segment contenant code et données. Les premiers octets du fichier sont
 directement interprétés comme exécutables.
 
 \paragraph{Isolation du code intéressant}~
@@ -499,44 +487,44 @@ cibler : \texttt{AskPassword} (fichier \texttt{BootMain.cpp}), dont le
 prototype est le suivant :
 
 \begin{center}
-    \texttt{void AskPassword(Password \&password)}
+    \texttt{void AskPassword(Password \&password);}
 \end{center}
 
 Le choix a été fait (comme dans l'attaque de Johanna Rutkowska) de ne pas
 \textit{insérer} du code (entreprise très périlleuse), mais d'ajouter du code
 après le binaire. Pour repérer la fonction \texttt{AskPassword} dans le code
 décompressé, nous sommes partis des données (les messages affichés dans
-AskPassword, faciles à repérer dans le code avec un \texttt{strings -t x \$file
-| grep all}) et avons rapidement pu trouver l'endroit où était le code (grâce à
-IDA).
+\texttt{AskPassword}, faciles à repérer dans le code avec un \texttt{strings -t x \$file
+| grep all}) et avons rapidement pu trouver l'endroit où était le code à l'aide 
+d'IDA.
 
 Le code appelant \texttt{AskPassword} est facilement trouvable grâce aux
-références croisées de IDA.
+références croisées d'IDA.
 
 \paragraph{Man in the middle applicatif}~
 
-L'infection du code repose sur l'idée du Man in the Middle. Pour notre
+L'infection du code repose sur l'idée du \textit{Man in the Middle}. Pour notre
 implémentation, nous avons choisi de suivre la méthode employée par Rutkowska,
 mais présenterons plus bas une autre méthode possible. La méthode utilisée
-repose sur l'idée d'intercaler un appel à un code arbitraire avant l'appel à 
+consiste à intercaler un appel à un code arbitraire avant l'appel à 
 \texttt{AskPassword} (voir figure \ref{ask_tweak}, qui donne un aperçu de l'état
 de la pile lors de l'appel d'\texttt{AskPassword} par notre code inséré).
-L'attaque consiste en la séquence d'actions suivante :
+L'attaque se résume en la séquence d'actions suivante :
 
 \begin{enumerate}
-    \item Insérer le code "Man in the Middle" (son contenu est expliqué plus loin)
+    \item Insérer le code \textit{Man in the Middle} (son contenu est expliqué plus loin)
     à la fin du binaire.
     \begin{itemize}
         \item La première version consistait à écrire le code à la suite de la
         section \texttt{data} du bootloader, mais cela causait des bugs étonnants.
         Il s'avérait que le programme se servait de cet espace (pour le BSS très
-        certainement), nous avons fini par trouver (grâce à l'exemple de
+        certainement). Nous avons fini par trouver (grâce à l'exemple de
         Rutkowska) qu'il existait une variable définissant la taille totale
-        nécessaire au programme (0x6F00 nécessaire pour le code, les
-        data, le bss et la pile, contre environ 0x4c00 pour code et data
+        nécessaire au programme (\texttt{0x6F00} nécessaire pour le code, les
+        data, le BSS et la pile, contre environ \texttt{0x4c00} pour code et data
         seulement).
-        \item Nous avons placé le code après cette valeur (à l'offset 0x6F00 du
-        bootloader décompressé), rempli l'espace non utilisé de 0 (pour que le
+        \item Nous avons placé le code après cette valeur (à l'offset \texttt{0x6F00} du
+        bootloader décompressé), rempli l'espace non utilisé de zéros (pour que le
         bootloader recompressé ne dépasse pas la taille maximale autorisée). Il
         a ensuite fallu réécrire la constante donnant la taille nécessaire au 
         programme dans le MBR.
@@ -552,8 +540,8 @@ L'attaque consiste en la séquence d'actions suivante :
     l'appel, l'offset d'\texttt{AskPassword} et on connaît l'offset de notre code.
     Il ne reste plus qu'à :
     \begin{itemize}
-        \item Faire pointer l'appel à \texttt{AskPassword} vers notre code.
-        \item Faire en sorte que le \texttt{call} de notre code pointe vers
+        \item faire pointer l'appel à \texttt{AskPassword} vers notre code;
+        \item faire en sorte que le \texttt{call} de notre code pointe vers
         \texttt{AskPassword}.
     \end{itemize}
 \end{enumerate}
@@ -564,13 +552,13 @@ L'attaque consiste en la séquence d'actions suivante :
     \centering
     \includegraphics[height=0.3\textheight]{img/pile_tc.png}
     \caption{Vu de l'état de la pile lors de l'appel à \texttt{AskPassword} par
-             le code inséré (Logger sur le schéma).}
+             le code inséré (\texttt{Logger} sur le schéma).}
     \label{ask_tweak}
 \end{figure}
 
 Pour la récupération du mot de passe, nous avons réutilisé le code assembleur
 rédigé par Rutkowska. C'est ce code qui a été ajouté au binaire pour
-\texttt{leaker} le mot de passe. Ce bout de code était nommé \og logger \fg, nous
+leaker le mot de passe. Ce bout de code était nommé \og logger \fg, nous
 avons gardé le même nom (il s'agit du fichier \texttt{logger.asm}).
 
 Ce code a un fonctionnement très simple : il commence par réempiler l'argument
@@ -583,7 +571,7 @@ remplira la structure \texttt{Password} avec le bon contenu, et le code interpos
 qu'à dumper le contenu de celle-ci.
 
 Le dump de la structure est une question qui peut paraître délicate de prime
-abord : aucun système de fichier n'est à notre disposition à ce moment du boot.
+abord : aucun système de fichiers n'est à notre disposition à ce moment du boot.
 Alors où le stocker ?
 
 La réponse que Rutkowska a apporté à la question est simple : sur le disque.
@@ -604,7 +592,7 @@ Ce nombre n'étant pas nécessairement le même pour toutes les installations (m
 suffisamment souvent le même pour avoir une attaque qui fonctionne souvent), il
 aurait été une bonne chose de remplacer également cette valeur au moment de
 l'infection par la valeur adaptée à l'installation de TrueCrypt visée. Nous ne
-l'avons pas fait pour simplifier l'attaque, mais ça serait une piste
+l'avons pas fait pour simplifier l'attaque, mais il pourrait s'agir d'une piste
 d'amélioration.
 
 La structure contenant le mot de passe est donc tout simplement dumpée sur le
@@ -618,13 +606,13 @@ est de récupérer les données d'un disque chiffré.
 Plutôt que de patcher un, ou des appels à AskPassword, on aurait pu envisager
 de patcher la fonction elle-même en remplaçant le dernier \texttt{ret} et 
 quelques instructions précédentes par un jump sur le code ajouté. Dans le code
-ajouté on aurait exécuté les instructions qui ont dû être enlevées de AskPassword
+ajouté on aurait exécuté les instructions qui ont dû être enlevées de \texttt{AskPassword}
 pour faire loger le jump (3 octets en assembleur 16 bits), puis écrit la structure
-password sur le disque et enfin fait le \texttt{ret} final.
+\texttt{Password} sur le disque et enfin fait le \texttt{ret} final.
 
 Cela reviendrait à rajouter du code à \texttt{AskPassword} plutôt que
-d'intercepter l'appel. L'adresse de AskPassword peut être trouvé de manière
-relativement fiable en trouvant l'une des chaînes affichées par cette fonction
+d'intercepter l'appel. L'adresse de \texttt{AskPassword} peut être trouvée de manière
+relativement fiable à l'aide de l'une des chaînes affichées par cette fonction
 et en cherchant les occurrences de son adresse dans le code.
 
 Nous n'avons pas mis en place cette version car nous avons suivi la ligne
@@ -637,9 +625,9 @@ Après avoir réalisé tout ce processus d'infection, il ne faudra pas oublier d
 \begin{itemize}
     \item Recompresser le bootloader avec les bonnes options (pour que le
     Decompressor le décompresse correctement lors du boot). Ces options sont
-    visibles dans le Makefile de la partie Bootloader des sources de TrueCrypt.
+    visibles dans le \texttt{Makefile} de la partie Bootloader des sources de TrueCrypt.
     \item Soit recalculer la checksum du bootloader infecté une fois recompressé,
-    soit tout simplement la bypasser en remplaçant un \texttt{jz} par un simple
+    soit tout simplement l'outrepasser en remplaçant un \texttt{jz} par un simple
     \texttt{jmp}. Rutkowska a choisi la première option, nous la seconde.
     \item Comme dit plus haut, mettre à jour la taille de la mémoire nécessaire
     à la bonne exécution du bootloader.
@@ -671,11 +659,6 @@ Nous n'avons pas récupéré la clé de chiffrement utilisée par TrueCrypt, mai
 fois de plus, en lisant un peu plus le code, et étant donné que nous sommes en 
 possession du mot de passe, la clé de chiffrement ne devrait pas être trop 
 compliquée à récupérer.
-
-La possibilité (et la facilité) d'une telle attaque contre TrueCrypt, qui est un
-programme à la fois Open Source et à très bonne réputation pousse à penser qu'avec
-un temps suffisant pour examiner le cas BitLocker, on pourrait construire une
-attaque similaire.
 
 
 %\clearpage
@@ -774,7 +757,7 @@ Une première contrainte est que le fait de charger un OS pour réaliser un dump
 de la mémoire écrase inévitablement une partie des données présentes en RAM.
 Cet OS se doit donc d'être le plus petit possible.  Une autre contrainte est
 que depuis la version 2.6, il n'est plus possible de lire librement dans
-/dev/mem. Une première solution consiste à recompiler le noyau en désactivant
+\texttt{/dev/mem}. Une première solution consiste à recompiler le noyau en désactivant
 la sécurité empêchant cette action.
 
 \begin{figure}[H]
@@ -784,7 +767,7 @@ la sécurité empêchant cette action.
 \end{figure}
 
 La deuxième solution consiste à charger \texttt{fmem}, un module noyau créant
-un nouveau fichier dans /dev permettant d'accéder à l'ensemble de la mémoire
+un nouveau fichier dans \texttt{/dev} permettant d'accéder à l'ensemble de la mémoire
 sans aucune limite. Cette solution a pour avantage qu'elle ne nécessite pas la
 recompilation du noyau.
 
@@ -800,7 +783,8 @@ parmi l'énorme quantité de données récupérée.
 D'après l'ouvrage \texttt{RAM is
 key}\footnote{http://cryptome.org/0003/RAMisKey.pdf} le mot de passe se trouve
 dans l'espace mémoire correspondant au driver de TrueCrypt. De plus une
-recherche avec le format [1 byte size][3 null bytes][passphrase][1 null byte]
+recherche avec le format:~\\
+\verb"[1 byte size][3 null bytes][passphrase][1 null byte]"\\
 permet de localiser le mot de passe au sein de l'espace mémoire du driver.
 
 
@@ -845,7 +829,7 @@ imparable (retrait de la pile du BIOS pour le réinitialiser). Il faut tout de
 même noter que certaines de ces attaques nécessitent deux accès physiques à la
 machine à des moments différents. Certains logiciels, comme TrueCrypt, ne 
 cherchent d'ailleurs pas à garantir la sécurité en cas d'attaque
-physique\footnote{\og D'après la documentation de TrueCrypt : \textit{If an
+physique\footnote{D'après la documentation de TrueCrypt : \og \textit{If an
 attacker can physically access the computer hardware and you use it after the
 attacker has physically accessed it, then TrueCrypt may become unable to secure
 data on the computer}.\fg}.
@@ -865,7 +849,7 @@ pour assurer la sécurité des données. Un disque ayant été accédé une fois
 pourrait être utile dans les affaires judiciaires (si ce n'est pas déjà
 utilisé), et éviter les fiasco comme celui du laptop chiffré avec TrueCrypt
 d'un gros bonnet de la drogue au
-Brésil\footnote{http://news.techworld.com/security/3228701/}.
+Brésil\footnote{\url{http://news.techworld.com/security/3228701/}}.
 
 Ce projet nous a apporté beaucoup, notamment techniquement. Il a été l'occasion
 d'amasser beaucoup de culture sur la façon dont se déroule le boot d'une machine,
