@@ -65,7 +65,7 @@
 \end{figure}
 
 \vspace*{0.3cm}
-\Large{J. \textsc{Chaumont}\ \ \ P. \textsc{Gourrinchas}\ \ \ \textsc{A. Hanriat}\ \ \ \textsc{F. Monjalet}}\\
+\Large{J. \textsc{Chaumont}\ \ \ P. \textsc{Gourinchas}\ \ \ \textsc{A. Hanriat}\ \ \ \textsc{F. Monjalet}}\\
 \vspace*{1cm}
 \large{27/01/2014}
 
@@ -112,7 +112,7 @@ Le système est relativement simple. L'utilisateur est seul possesseur d'un mot 
 	\caption{Principe de fonctionnement simplifié de LUKS}
 \end{figure}
 
-Dans un linux chiffré avec dm-crypt (respectant la spécification LUKS), il y a une patition de boot non chiffrée contenant un \texttt{initrd}. Il s'agit d'un OS linux minimal servant à réaliser le boot du vrai linux. C'est aussi lors de l'exécution de cet \texttt{initrd} que le mot de passe est demandé et que la partition chiffrée est montée de manière à être déchiffrée à la volée avec la bonne clé.
+Dans un linux chiffré avec dm-crypt (respectant la spécification LUKS), il y a une partition de boot non chiffrée contenant un \texttt{initrd}. Il s'agit d'un OS linux minimal servant à réaliser le boot du vrai linux. C'est aussi lors de l'exécution de cet \texttt{initrd} que le mot de passe est demandé et que la partition chiffrée est montée de manière à être déchiffrée à la volée avec la bonne clé.
 
 \begin{figure}[H]
 	\centering
@@ -247,7 +247,7 @@ facile de compromettre un système, même chiffré en ayant juste un accès phys
 ou root à la machine (un accès root est suffisant pour réaliser cette attaque).
 Sur les systèmes chiffrés avec LUKS, il est même relativement facile de récupérer
 la clé de chiffrement elle-même, puisqu'il s'agit simplement d'exécuter une
-commande, fournir le mot de passe actuel (qui est en notre possession). Il 
+commande puis de fournir le mot de passe actuel (qui est en notre possession). Il 
 suffit de parser la sortie de cette commande pour récupérer la clé. Nous ne 
 l'avons pas fait pour passer plus de temps sur d'autres sujets, mais le réaliser
 serait encore une fois peu difficile en théorie (et en pratique).
@@ -296,7 +296,7 @@ hexdump -C passdump-devsda1
 
 \subsubsection*{Les problèmes rencontrés}
 
-Il était initialement prévu de mener l'attaque comme sur Fedora en profitant d'un script lancé au démarrage de l'ordinateur pour envoyer le mot de passe sur Internet. Des difficultés ont été rencontrées et nous ont contraint à changer de tactique pour celle qui a finalement été adoptée.
+Il était initialement prévu de mener l'attaque comme sur Debian en profitant d'un script lancé au démarrage de l'ordinateur pour envoyer le mot de passe sur Internet. Des difficultés ont été rencontrées et nous ont contraint à changer de tactique pour celle qui a finalement été adoptée.
 
 Le problème majeur est le fait que nous n'ayons pas trouvé précisément quels binaires de systemd étaient appelés après montage du système déchiffré. L'autre point était que sur Fedora, le script \texttt{rc.local} utilisé sur Debian n'est par défaut pas pris en charge, et il faut au préalable avoir démarré le service correspondant.
 
@@ -360,7 +360,7 @@ Le programme reprend avec soin l'affichage exact de l'écran de démarrage par d
 	\caption{Affichage du programme de phishing TrueCrypt}
 \end{figure}
 
-Pour mettre en place cette attaque, l'idée était d'utiliser la clé USB bootable utilisée pour LUKS, mais en y apportant quelques modifications afin de la rendre le plus \textit{silencieuse} possible: en d'autres termes, pouvoir démarrer sur cette clé sans que la personne devant l'écran ne puisse constater la supercherie.
+Pour mettre en place cette attaque, l'idée était d'utiliser la clé USB bootable utilisée pour LUKS, mais en y apportant quelques modifications afin de la rendre la plus \textit{silencieuse} possible: en d'autres termes, pouvoir démarrer sur cette clé sans que la personne devant l'écran ne puisse constater la supercherie.
 
 Cette façon de faire a néanmoins de nombreuses lacunes:
 {
@@ -411,12 +411,12 @@ code présent dans le secteur d'amorçage.
 
 Pour mener à bien cette attaque, nous avons du commencer par nous renseigner
 sur les mécanismes impliqués dans le boot d'une machine sur un disque dur : il
-s'agit principalement de l'exécution d'une petite portion de code présente dans
+s'agit principalement de l'exécution d'une petite portion de code présente dans le
 MBR (premier secteur du disque dur).
 
 En désassemblant ce code (avec IDA), nous avons pu retrouver la source
 assembleur correspondante dans les sources de TrueCrypt, contenant des
-informations donnant plus de sens au code (évitant par la même occasion du
+informations donnant plus de sens au code (évitant par la même occasion de perdre du
 temps à reverser le code désassemblé). Il a tout de même fallu se familiariser
 avec les diverses interruptions utilisées pour les I/O, ainsi que quelques
 spécificités de l'assembleur 16 bits présent dans les MBR.
@@ -439,7 +439,7 @@ Nous allons maintenant parler plus en profondeur de chaque étape de l'attaque.
 \subsubsection{Séquence de boot de TrueCrypt}
 
 La séquence de boot de TrueCrypt est relativement simple, comme le montre la
-figure \ref{tc_boot}. Toute la séquence se déroule dans en mode réel, c'est à dire
+figure \ref{tc_boot}. Toute la séquence se déroule en mode réel, c'est à dire
 en mode 16 bits.
 
 Il est bon de noter que le seul semblant d'OS qui est à la disposition du
@@ -460,8 +460,9 @@ Les étapes sont les suivantes :
     \texttt{es} est utilisé conjointement à d'autres registres pour simuler un
     adressage sur 20 bits (\texttt{es << 4 + reg}).} (valant 0 ici) et de
     l'adresse du code dans le segment, en l'occurrence \texttt{0x100} puis
-    l'exécution d'un \texttt{retf}.  \item C'est ce bootloader qui demande le
-    mot de passe : c'est donc ici que nous allons agir pour l'intercepter.
+    l'exécution d'un \texttt{retf}.
+    \item C'est ce bootloader qui demande le mot de passe : 
+    c'est donc ici que nous allons agir pour l'intercepter.
 \end{enumerate}
 
 \begin{figure}[H]
@@ -618,7 +619,6 @@ secteur choisi, et il suffira de lire ce secteur lors d'un accès ultérieur au
 disque dur pour récupérer le mot de passe. L'hypothèse d'un deuxième accès au
 disque dur machine est plus que raisonnable, puisque le but de ce type d'attaque
 est de récupérer les données d'un disque chiffré.
-
 
 \paragraph{Autre méthode}~
 
