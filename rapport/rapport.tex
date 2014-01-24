@@ -581,7 +581,7 @@ correspond en assembleur à son adresse) attendu par \texttt{AskPassword}, puis
 appelle cette fonction \footnote{Comme expliqué plus haut, l'appel à
 \texttt{AskPassword} est patché lors de l'infection, l'adresse pointée par le
 call dans le code est fictive.}. Lorsqu'elle est appelée, \texttt{AskPassword}
-remplira la structure Password avec le bon contenu, et le code interposé n'aura
+remplira la structure Password avec le bon contenu, et le code interposé n'aura 
 qu'à dumper le contenu de celle-ci.
 
 Le dump de la structure est une question qui peut paraître délicate de prime
@@ -711,20 +711,16 @@ BitLocker peut également être utilisé sans TPM, même si l'option est désact
 par défaut et que son activation pourrait être assimilée à une chasse au trésor
 dans les méandres du gestionnaire de politiques de sécurité. Dans cette
 situation, BitLocker requiert l'insertion d'une clé USB dans laquelle il
-inscrit le mot de passe permettant de déchiffrer le disque dur. Un mot de passe
-entré par l'utilisateur peut être utilisé en complément.
 
-Par manque de temps, et également à cause de quelques difficultés rencontrées
-liées à la virtualisation de notre système Windows de test, nous n'avons pas
-implémenté d'attaque contre BitLocker sans TPM. Néanmoins, dans cette
-situation, la mise en place d'un phishing récupérant le mot de passe de
-l'utilisateur et réalisant une copie intégrale de sa clé usb aurait a priori
-permis de se ramener au cas du phishing réalisé pour TrueCrypt. Si aucun code
-exécuté n'est présent sur la clé, il doit également être possible de corrompre
-le code interagissant avec la clé pour leaker des informations critiques
-concernant le chiffrement (clé de chiffrement, ou clé chiffrée par le mot de
-passe et mot de passe).
-
+inscrit un fichier permettant de déchiffrer le disque dur. Il est alors
+étonnamment trivial d'outrepasser BitLocker en mettant la main sur cette clé USB
+--- notons que les clés USB figurent très certainement parmi les objets les plus
+faciles à perdre ---, puisqu'une simple copie sur un autre support du fichier
+\texttt{BEK} qu'elle contient suffit: la nouvelle clé USB sera tout aussi bien
+validée que l'originale par BitLocker. Pour augmenter la sécurité, BitLocker
+aurait pu par exemple mettre en place en complément un système de mot de passe
+saisi par l'utilisateur, ce qui n'est malheureusement pas le cas dans cette
+situation.
 
 %\clearpage
 \section{Les autres solutions}
@@ -785,14 +781,11 @@ que depuis la version 2.6, il n'est plus possible de lire librement dans
 /dev/mem. Une première solution consiste à recompiler le noyau en désactivant
 la sécurité empêchant cette action.
 
-
 \begin{figure}[H]
-	\begin{center}
-		\includegraphics[width=15cm]{img/kernel.png}
-	\end{center}
+  \begin{center}
+    \includegraphics[width=15cm]{img/kernel.png}
+  \end{center}
 \end{figure}
-
-
 
 La deuxième solution consiste à charger \texttt{fmem}, un module noyau créant
 un nouveau fichier dans /dev permettant d'accéder à l'ensemble de la mémoire
