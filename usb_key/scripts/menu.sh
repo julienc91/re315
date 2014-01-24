@@ -19,7 +19,7 @@ function display_menu
 run_bash()
 {
     echo "You can relaunch this menu in /usr/bin/menu.sh"
-    exit 0
+    /bin/bash
 }
 
 
@@ -33,7 +33,7 @@ dump_memory()
     while read value; do
         if [ $value -lt $totalMem ] && [ $value -gt 0 ];then
             echo "Dumping memory .."
-            dd if="/dev/fmem" of="$data_target/dump`date +%x%X`.dd" bs=1MB count=$value
+            dd if="/dev/fmem" of="$data_target/dump.dd" bs=1MB count=$value
             return 0
         else
             echo "Invalid value, try again"

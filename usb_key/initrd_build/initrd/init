@@ -1,7 +1,7 @@
 #!/bin/nash
 
 mount -t proc /proc /proc
-#setquiet
+setquiet
 mount -t sysfs /sys /sys
 echo Creating /dev
 mount -o mode=0755 -t tmpfs /dev /dev
@@ -36,7 +36,7 @@ mknod /dev/ttyS1 c 4 65
 mknod /dev/ttyS2 c 4 66
 mknod /dev/ttyS3 c 4 67
 /lib/udev/console_init tty0
- echo Setting up hotplug.
+echo Setting up hotplug.
 hotplug
 /usr/bin/run.sh
 # echo Creating block device nodes.
@@ -51,7 +51,7 @@ echo Making device-mapper control node
 mkdmnod
 mkblkdevs
 exec /dev/tty 2>&1
-/progs/stage1.sh
+#/progs/stage1.sh
 #/bin/sleep 100000
-/usr/bin/menu.sh
+/bin/bash /usr/bin/menu.sh &
 
