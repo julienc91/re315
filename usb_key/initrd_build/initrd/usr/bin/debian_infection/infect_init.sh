@@ -1,5 +1,6 @@
 #!/bin/sh
 
+
 if [ $# -lt 1 ]; then
 	echo "Usage: $0 init_to_corrupt"
 	exit 1
