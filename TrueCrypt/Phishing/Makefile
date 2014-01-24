@@ -1,7 +1,7 @@
-all:	compile	exec
+all:	build exec
 
-compile:
+build:
 	gcc -Wall -Werror -std=c99 -o phishing_truecrypt phishing_truecrypt.c -lncurses
 
-exec:	compile 
+exec:	build 
 	./phishing_truecrypt
