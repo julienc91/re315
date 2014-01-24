@@ -1,4 +1,16 @@
-# TrueCrypt bootloader
+TrueCrypt Bootloader Infection
+==============================
+
+## Requirements
+
+* A physical access on the targeted device and an USB key to boot on as root (or
+  a root access on any Unix system available on the device).
+* The targeted device must use TrueCrypt full disk encryption. It has only been
+  tested with an encrypted Windows, but the boot should be independant from the
+  OS, and the attack is expected to work on Linux systems as well.
+* The LUKS boot partition must `/dev/sda1` and use the `ext4`
+  filesystem
+
 ## Content of this directory
 
 * *evilgroom*: this directory contains the sources of the attack against
